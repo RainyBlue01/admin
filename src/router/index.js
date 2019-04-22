@@ -68,6 +68,32 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '',
+    component: Layout,
+    redirect: 'activity',
+    children: [
+      {
+        path: 'activity',
+        component: () => import('@/views/activity/index'),
+        name: 'Activity',
+        meta: { title: 'activity_admin', icon: 'dashboard', noCache: true, affix: true }
+      }
+    ]
+  },
+  {
+    path: '',
+    component: Layout,
+    redirect: 'travel',
+    children: [
+      {
+        path: 'travel',
+        component: () => import('@/views/travel/index'),
+        name: 'Travel',
+        meta: { title: 'travel_admin', icon: 'dashboard', noCache: true, affix: true }
+      }
+    ]
+  }
 
 ]
 
