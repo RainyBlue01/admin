@@ -55,7 +55,7 @@ export const constantRoutes = [
     component: () => import('@/views/error-page/401'),
     hidden: true
   },
-  {
+  /*{
     path: '',
     component: Layout,
     redirect: 'dashboard',
@@ -65,6 +65,32 @@ export const constantRoutes = [
         component: () => import('@/views/dashboard/index'),
         name: 'Dashboard',
         meta: { title: 'dashboard', icon: 'dashboard', noCache: true, affix: true }
+      }
+    ]
+  },*/
+  {
+    path: '/',
+    component: Layout,
+    redirect: 'scenicspot',
+    children: [
+      {
+        path: '/scenicspot',
+        component: () => import('@/views/scenicspot/index'),
+        name: 'ScenicSpot',
+        meta: { title: ' 景点管理', icon: 'dashboard' }
+      }
+    ]
+  },
+  {
+    path: '/roadbook',
+    component: Layout,
+    redirect: 'roadbook',
+    children: [
+      {
+        path: '/roadbook',
+        component: () => import('@/views/roadbook/index'),
+        name: 'RoadBook',
+        meta: { title: ' 路书管理', icon: 'dashboard' }
       }
     ]
   },
@@ -79,7 +105,7 @@ export const asyncRoutes = [
 
   /** when your routing map is too long, you can split it into small modules **/
 
-  {
+/*  {
     path: '/zip',
     component: Layout,
     redirect: '/zip/download',
@@ -94,7 +120,7 @@ export const asyncRoutes = [
         meta: { title: 'exportZip' }
       }
     ]
-  },
+  },*/
 
   { path: '*', redirect: '/404', hidden: true }
 ]
