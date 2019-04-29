@@ -55,19 +55,6 @@ export const constantRoutes = [
     component: () => import('@/views/error-page/401'),
     hidden: true
   },
-  /*{
-    path: '',
-    component: Layout,
-    redirect: 'dashboard',
-    children: [
-      {
-        path: 'dashboard',
-        component: () => import('@/views/dashboard/index'),
-        name: 'Dashboard',
-        meta: { title: 'dashboard', icon: 'dashboard', noCache: true, affix: true }
-      }
-    ]
-  },*/
   {
     path: '/',
     component: Layout,
@@ -94,7 +81,71 @@ export const constantRoutes = [
       }
     ]
   },
-
+  {
+    path: '/activities',
+    component: Layout,
+    redirect: 'activities',
+    children: [
+      {
+        path: '/activities',
+        component: () => import('@/views/activities/index'),
+        name: 'activities',
+        meta: { title: ' 活动管理', icon: 'dashboard' }
+      }
+    ]
+  },
+  {
+    path: '/travelnotes',
+    component: Layout,
+    redirect: 'travelnotes',
+    children: [
+      {
+        path: '/travelnotes',
+        component: () => import('@/views/travelnotes/index'),
+        name: 'travelnotes',
+        meta: { title: ' 游记管理', icon: 'dashboard' }
+      }
+    ]
+  },
+  {
+    path: '/admin',
+    component: Layout,
+    redirect: 'admin',
+    children: [
+      {
+        path: '/admin',
+        component: () => import('@/views/travelnotes/index'),
+        name: 'admin',
+        meta: { title: ' 管理员管理', icon: 'dashboard' }
+      }
+    ]
+  },
+  {
+    path: '/role',
+    component: Layout,
+    redirect: 'role',
+    children: [
+      {
+        path: 'role',
+        component: () => import('@/views/role/index'),
+        name: 'role',
+        meta: { title: '角色管理', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/system',
+    component: Layout,
+    redirect: 'role',
+    children: [
+      {
+        path: 'system',
+        component: () => import('@/views/system/index'),
+        name: 'system',
+        meta: { title: '系统设置', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
 ]
 
 /**
