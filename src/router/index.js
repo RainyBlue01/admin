@@ -136,13 +136,20 @@ export const constantRoutes = [
   {
     path: '/system',
     component: Layout,
-    redirect: 'role',
+    redirect: 'system',
+    meta: { title: '系统设置', icon: 'dashboard', noCache: true },
     children: [
       {
-        path: 'system',
-        component: () => import('@/views/system/index'),
-        name: 'system',
-        meta: { title: '系统设置', icon: 'dashboard', noCache: true }
+        path: 'carousel',
+        component: () => import('@/views/system/Carousel'),
+        name: 'carousel',
+        meta: { title: '轮播图设置', icon: 'dashboard', noCache: true }
+      },
+      {
+        path: '/bigbug',
+        component: () => import('@/views/system/BigBug'),
+        name: 'bigbug',
+        meta: { title: '大人物设置', icon: 'dashboard', noCache: true }
       }
     ]
   },
