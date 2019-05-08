@@ -2,18 +2,16 @@
   <div>
     <el-upload
       :auto-upload="false"
+      class="upload-demo"
+      :file-list="fileList"
+      list-type="picture"
       :action="uploadUrl"
       ref="upload"
       :data="data_extra"
       :headers="uploadHeaders"
-      :http-request="fnUploadRequest"
-      drag
-      :limit="files"
-      :disabled="disabled"
-      multiple>
-      <i class="el-icon-upload"></i>
-      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      <div slot="tip" class="el-upload__tip">上传文件大小不能超过 1G</div>
+      :http-request="fnUploadRequest">
+      <el-button size="small" type="primary">点击上传</el-button>
+      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
     </el-upload>
   </div>
 </template>
