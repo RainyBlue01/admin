@@ -164,6 +164,7 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
+          // this.$router.push({ path: this.redirect || '/roadbook/roadbooklist' })
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {

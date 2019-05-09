@@ -30,7 +30,7 @@ export default [
     type: 'post',
     response: config => {
       const { username } = config.body
-      const token = tokens[username]
+      const token = "admin-token"
 
       // mock error
       if (!token) {

@@ -33,14 +33,17 @@ const actions = {
   login({ commit }, userInfo) {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
+      commit('SET_TOKEN', 'admin-token')
+      setToken('admin-token')
+      resolve()
+      // login({ username: username.trim(), password: password }).then(response => {
+      //   const { data } = response
+      //   commit('SET_TOKEN', 'admin-token')
+      //   setToken('admin-token')
+      //   resolve()
+      // }).catch(error => {
+      //   reject(error)
+      // })
     })
   },
 
@@ -61,10 +64,10 @@ const actions = {
           reject('getInfo: roles must be a non-null array!')
         }
 
-        commit('SET_ROLES', roles)
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
-        commit('SET_INTRODUCTION', introduction)
+        commit('SET_ROLES', 'admin')
+        commit('SET_NAME', 'I am a super administrator')
+        commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
+        commit('SET_INTRODUCTION', 'Super Admin')
         resolve(data)
       }).catch(error => {
         reject(error)

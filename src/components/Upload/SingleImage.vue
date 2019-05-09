@@ -14,14 +14,6 @@
         将文件拖到此处，或<em>点击上传</em>
       </div>
     </el-upload>
-    <div class="image-preview">
-      <div v-show="imageUrl.length>1" class="image-preview-wrapper">
-        <img :src="imageUrl+'?imageView2/1/w/200/h/200'">
-        <div class="image-preview-action">
-          <i class="el-icon-delete" @click="rmImage" />
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -85,7 +77,7 @@ export default {
         position: relative;
         @include clearfix;
         .image-uploader {
-            width: 60%;
+            width: 100%;
             float: left;
         }
         .image-preview {
