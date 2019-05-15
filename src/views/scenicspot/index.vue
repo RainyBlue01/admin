@@ -77,14 +77,23 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" >
         <el-form-item label="景点名称">
           <el-input v-model="temp.title" />
         </el-form-item>
         <el-form-item label="地理位置">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.status" style="width: 164px" class="filter-item" placeholder="Please select">
             <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
           </el-select>
+          <el-input v-model="keyword" style="width: 162px"/>
+          <baidu-map  :scroll-wheel-zoom="true"  class="map"  :zoom="15">
+            <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="keyword" :auto-viewport="true" :panel="false"></bm-local-search>
+            <!--<bm-marker  :position="{lng: 116.404, lat: 39.915}" :dragging="true" animation="BMAP_ANIMATION_BOUNCE">-->
+            <!--<bm-label content="我爱北京天安门" :labelStyle="{color: 'red', fontSize : '24px'}" :offset="{width: -35, height: 30}"/>-->
+            <!--</bm-marker>-->
+            <!--<bm-geolocation :locationSuccess="checkMa" anchor="BMAP_ANCHOR_BOTTOM_RIGHT" :showAddressBar="true" :autoLocation="true"></bm-geolocation>-->
+          </baidu-map>
+          </el-col>
         </el-form-item>
         <el-form-item label="推荐指数">
           <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="10" style="margin-top:8px;" />
@@ -165,6 +174,7 @@
         tableKey: 0,
         list: null,
         total: 0,
+        keyword:'',
         listLoading: true,
         listQuery: {
           page: 1,
@@ -209,6 +219,12 @@
       this.getList()
     },
     methods: {
+      sendRes(poi){
+        console.log(poi)
+      },
+      checkMa(pois){
+        console.log(pois)
+      },
       select(selection){
         console.log(selection)
       },
@@ -362,6 +378,12 @@
   }
 </script>
 <style lang="scss">
+  .map {
+    display: flex;
+    width: 100%;
+    height: 400px;
+    margin-top: 10px;
+  }
 .ml{
   margin-left: 10px;
 }

@@ -12,7 +12,7 @@ import '@/styles/index.scss' // global css
 import App from './App'
 import store from './store'
 import router from './router'
-
+import BaiduMap from 'vue-baidu-map'
 import i18n from './lang' // Internationalization
 import './icons' // icon
 import './permission' // permission control
@@ -35,7 +35,12 @@ Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])
 })
 
-Vue.config.productionTip = false
+// Vue.config.productionTip = false
+
+Vue.use(BaiduMap, {
+  // ak 是在百度地图开发者平台申请的密钥 详见 http://lbsyun.baidu.com/apiconsole/key */
+  ak: '7iie76E8dzxyU16g41N7fUAzXZ2kk6EY'
+})
 
 new Vue({
   el: '#app',
