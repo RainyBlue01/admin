@@ -7,7 +7,7 @@ function resolve(dir) {
 }
 
 const name = defaultSettings.title || 'vue Element Admin' // page title
-const port = 9001 // dev port
+const port = 9000 // dev port
 
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
@@ -18,27 +18,18 @@ module.exports = {
    * In most cases please use '/' !!!
    * Detail: https://cli.vuejs.org/config/#publicpath
    */
-  publicPath: '/',
+  publicPath:  '/',
   outputDir: 'dist',
   assetsDir: 'static',
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
+    host: 'localhost',
     port: port,
-    open: true,
-    overlay: {
-      warnings: false,
-      errors: true
-    },
     proxy: {
-      // change xxx-api/login => mock/login
-      // detail: https://cli.vuejs.org/config/#devserver-proxy
-      [process.env.VUE_APP_BASE_API]: {
+      '/web/v1': {
         target: process.env.SERVER_PROXY,
-        changeOrigin: true,
-        pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API]: ''
-        }
+        changeOrigin: true
       }
     },
   },

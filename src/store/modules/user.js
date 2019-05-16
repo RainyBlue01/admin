@@ -34,10 +34,15 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', 'admin-token')
-        setUser(data)
-        setToken('admin-token')
+        const  data  = response
+        console.log(response)
+        commit('SET_TOKEN',response.content.token)
+        commit('SET_NAME',response.content.username)
+        commit('SET_AVATAR',response.content.avatar)
+        commit('SET_ROLES','admin')
+        setToken(response.content.token)
+        delete  response.content.token
+        setUser(response.content)
         resolve()
       }).catch(error => {
         reject(error)
@@ -45,33 +50,7 @@ const actions = {
     })
   },
 
-  // get user info
-  getInfo({ commit, state }) {
-    return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
-        const { data } = response
 
-        if (!data) {
-          reject('Verification failed, please Login again.')
-        }
-
-        const { roles, name, avatar, introduction } = data
-
-        // roles must be a non-empty array
-        if (!roles || roles.length <= 0) {
-          reject('getInfo: roles must be a non-null array!')
-        }
-
-        commit('SET_ROLES', 'admin')
-        commit('SET_NAME', 'I am a super administrator')
-        commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
-        commit('SET_INTRODUCTION', 'Super Admin')
-        resolve(data)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
 
   // user logout
   logout({ commit, state }) {
@@ -80,6 +59,7 @@ const actions = {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
         removeToken()
+        removeUser()
         resetRouter()
         resolve()
       }).catch(error => {
