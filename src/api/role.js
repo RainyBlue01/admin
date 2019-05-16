@@ -7,32 +7,49 @@ export function getRoutes() {
   })
 }
 
-export function getRoles() {
+export function getRoles(data) {
   return request({
-    url: '/roles',
-    method: 'get'
+    url: '/role/page',
+    method: 'get',
+    data
+  })
+}
+
+export function getUpdateRoles(id) {
+  return request({
+    url: `/role/getRole/${id}`,
+    method: 'get',
   })
 }
 
 export function addRole(data) {
   return request({
-    url: '/role',
+    url: '/role/save',
     method: 'post',
     data
   })
 }
 
-export function updateRole(id, data) {
+export function updateRole(data) {
   return request({
-    url: `/role/${id}`,
+    url: '/role/update',
     method: 'put',
     data
   })
 }
 
-export function deleteRole(id) {
+export function deleteRole(data) {
   return request({
-    url: `/role/${id}`,
-    method: 'delete'
+    url: '/role/del',
+    method: 'delete',
+    data
+  })
+}
+
+export function allocateRole(data) {
+  return request({
+    url: '/role/allocate',
+    method: 'post',
+    data
   })
 }

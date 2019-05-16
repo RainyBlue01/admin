@@ -15,3 +15,10 @@ export function logout() {
   })
 }
 
+export function getUsers(data) {
+  return request({
+    url: '/set/getUsers',
+    method: 'post',
+    data
+  })
+}
