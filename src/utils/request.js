@@ -15,10 +15,10 @@ service.interceptors.request.use(
   config => {
     // Do something before request is sent
     if (store.getters.token) {
+      config.headers['X-Auth-Token'] = store.getters.token
       // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
-      if(getToken()){
-        config.headers['X-Auth-Token'] = JSON.parse(getToken())
-      }
+    } else if(getToken()){
+      config.headers['X-Auth-Token'] = JSON.parse(getToken())
     }
     return config
   },

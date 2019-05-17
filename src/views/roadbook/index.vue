@@ -6,10 +6,10 @@
         <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
       </el-select>
       <el-select v-model="listQuery.type" placeholder="行程时长" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+        <el-option v-for="item in contentTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
-      <el-select v-model="listQuery.type" placeholder="里程长度" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      <el-select v-model="listQuery.time" placeholder="游玩时间" clearable class="filter-item" style="width: 130px">
+        <el-option v-for="item in calendarTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
       <el-button  v-waves class="filter-item ml" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
@@ -153,18 +153,6 @@
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
-  const calendarTypeOptions = [
-    { key: 'CN', display_name: 'China' },
-    { key: 'US', display_name: 'USA' },
-    { key: 'JP', display_name: 'Japan' },
-    { key: 'EU', display_name: 'Eurozone' }
-  ]
-
-  // arr to obj, such as { CN : "China", US : "USA" }
-  const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-    acc[cur.key] = cur.display_name
-    return acc
-  }, {})
 
   export default {
     name: 'ComplexTable',
@@ -195,11 +183,71 @@
           importance: undefined,
           title: undefined,
           type: undefined,
-          sort: '+id'
+          sort: '+id',
+          time:undefined,
         },
         postForm:{image_uri:''},
-        importanceOptions: [1, 2, 3],
-        calendarTypeOptions,
+        importanceOptions: [1, 2, 3,4,5,6,7,8,9,10],
+        contentTypeOptions:[
+          {
+            value: null,
+            label: '全部'
+          },
+          {
+            value: 0,
+            label: '100km以内'
+          },
+          {
+            value: 1,
+            label: '100-500km'
+          },
+          {
+            value: 2,
+            label: '500-1000km'
+          },
+          {
+            value: 3,
+            label: '1000-2000km'
+          },
+          {
+            value: 4,
+            label: '2000-5000km'
+          },
+          {
+            value: 5,
+            label: '5000km以上'
+          }
+        ],
+        calendarTypeOptions:[
+          {
+            value: null,
+            label: '全部'
+          },
+          {
+            value: 0,
+            label: '1天以内'
+          },
+          {
+            value: 1,
+            label: '2~3天'
+          },
+          {
+            value: 2,
+            label: '3~5天'
+          },
+          {
+            value: 3,
+            label: '5~7天'
+          },
+          {
+            value: 4,
+            label: '7~15天'
+          },
+          {
+            value: 5,
+            label: '15天以上'
+          }
+        ],
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
