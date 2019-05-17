@@ -1,109 +1,137 @@
 <template>
-  <div>
-    <el-upload
-      :auto-upload="false"
-      class="upload-demo"
-      :file-list="fileList"
-      list-type="picture"
-      :action="uploadUrl"
-      ref="upload"
-      :data="data_extra"
-      :headers="uploadHeaders"
-      :http-request="fnUploadRequest">
-      <el-button size="small" type="primary">点击上传</el-button>
-      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-    </el-upload>
+  <div class="createPost-container">
+    <el-form ref="postForm" :model="postForm"  class="form-container">
+        <el-button  style="margin-left: 10px;" type="success" @click="submitForm">
+          上传
+        </el-button>
+      <div class="createPost-main-container">
+        <el-row>
+          <el-col :span="24">
+            <el-form-item style="margin-bottom: 40px;" prop="title">
+              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
+                轮播图设置
+              </MDinput>
+            </el-form-item>
+            <div class="postInfo-container">
+              <el-row>
+                <el-col :span="8">
+                  <el-form-item label-width="120px" label="轮播图类型:" class="postInfo-container-item">
+                    <el-select v-model="res.carouselType" placeholder="轮播图类型">
+                      <i slot="prefix" class="el-input__icon el-icon-rank"></i>
+                      <el-option
+                        v-for="item in carouselTypeList"
+                        :key="item.type"
+                        :label="item.label"
+                        :value="item.type"
+                      ></el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="8">
+                  <el-form-item style="padding: 0" label-width="120px" label="轮播图对应内容:" class="postInfo-container-item">
+                    <el-select v-model="res.carouselType" placeholder="轮播图类型">
+                      <i slot="prefix" class="el-input__icon el-icon-rank"></i>
+                        <el-input></el-input>
+                      <el-option
+                        v-for="item in carouselTypeList"
+                        :key="item.type"
+                        :label="item.label"
+                        :value="item.type"
+                      ></el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="8">
+                  <el-form-item label-width="120px" label="轮播图对应id:" class="postInfo-container-item">
+                    <el-input :disabled="true" v-model="postForm.id"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="24">
+                  <Upload v-model="postForm.image_uri" />
+                </el-col>
+              </el-row>
+            </div>
+          </el-col>
+        </el-row>
+
+      </div>
+    </el-form>
   </div>
 </template>
 <script>
-  import OSS from 'ali-oss'
+  import MDinput from '@/components/MDinput'
+  import Upload from '@/components/Upload/SingleImage'
   export default {
     name: 'fileUpload',
-    data () {
+    components: { MDinput,Upload},
+    data() {
       return {
-        uploadUrl: '',
-        uploadFileLength: 0,
-        uploadFileSuccess: 0,
-        uploadFileNames: [],
-        uploadFileName: [],
-        fileList: [],
-        files: 10,
-        uploadHeaders: {
-          authorization: ''
+        postForm:{
+          image_uri:'',
+          id:'',
         },
-        data_extra: {
-          type: Object,
-          required: true
+        res:{
+          carouselType:''
         },
-        accept: {
-          type: Array,
-          required: true
-        },
-        disabled: false
+        carouselTypeList:[
+          {label:'首页',type:0},
+          {label:'景点',type:1},
+          {label:'路书',type:2},
+          {label:'活动',type:3},
+          {label:'游记',type:4},
+          ]
       }
     },
     methods: {
-      /**
-       * @description [fnUploadRequest 覆盖默认的上传行为，实现自定义上传]
-       * @author   shanshuizinong
-       * @param    {object}   option [上传选项]
-       * @return   {null}   [没有返回]
-       */
-      async fnUploadRequest (option) {
-        try {
-          let vm = this
-          vm.disabled = true
-          // 获取OSS配置信息
-          // let uploadFileApi = new UploadFileApi()
-          // let ret = await uploadFileApi.fileOssParams()
-          // if (!(ret.data && ret.data.code === '0' && ret.data.data)) {
-          //   throw new Error('获取OSS参数失败')
-          // }
-          let ossData = JSON.parse(ret.data.data)
-          let relativePath = ossData.relativePath
-          let client = new OSS.Wrapper({
-            policy: ossData.policy,
-            accessKeyId: ossData.accessid,
-            accessKeySecret: ossData.accesssecret,
-            bucket: ossData.bucket,
-            signature: ossData.signature
-          })
-          let file = option.file
-          const point = file.name.lastIndexOf('.')
-          let suffix = file.name.substr(point)
-          let fileName = file.name.substr(0, point)
-          let fileNames = `1`
-          // 分片上传文件
-          ret = await client.multipartUpload(relativePath + fileNames, file, {
-            progress: async function (p) {
-              let e = {}
-              e.percent = p * 100
-              option.onProgress(e)
-            }
-          })
-          console.log(ret)
-          if (ret.res.statusCode === 200) {
-            // option.onSuccess(ret)
-            return ret
-          } else {
-            vm.disabled = false
-            option.onError('上传失败')
-          }
-        } catch (error) {
-          console.error(error)
-          this.disabled = false
-          option.onError('上传失败')
-          this.$error(error.message)
-        }
+      submitForm() {
+
       },
-      /**
-       * @description [fnUploadSuccess 文件上传成功的函数]
-       * @author   shanshuizinong
-       * @return   {null}  [没有返回]
-       */
-      async fnUploadSuccess () {
-        // TODO
-      }
+      draftForm() {
+      },
     }
   }
 </script>
+<style lang="scss" scoped>
+  @import "~@/styles/mixin.scss";
+  .el-select-dropdown__list{
+    padding: 0 !important;
+  }
+
+
+  .createPost-container {
+    position: relative;
+
+    .createPost-main-container {
+      padding: 40px 45px 20px 50px;
+
+      .postInfo-container {
+        position: relative;
+        @include clearfix;
+        margin-bottom: 10px;
+
+        .postInfo-container-item {
+          float: left;
+        }
+      }
+    }
+
+    .word-counter {
+      width: 40px;
+      position: absolute;
+      right: 10px;
+      top: 0px;
+    }
+  }
+
+  .article-textarea /deep/ {
+    textarea {
+      padding-right: 40px;
+      resize: none;
+      border: none;
+      border-radius: 0px;
+      border-bottom: 1px solid #bfcbd9;
+    }
+  }
+</style>

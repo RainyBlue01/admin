@@ -55,7 +55,6 @@ const actions = {
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
-      logout().then(() => {
         commit('SET_TOKEN','')
         commit('SET_NAME','')
         commit('SET_AVATAR','')
@@ -63,9 +62,6 @@ const actions = {
         removeToken()
         removeUser()
         resolve()
-      }).catch(error => {
-        reject(error)
-      })
     })
   },
 
