@@ -107,8 +107,13 @@
         this.routes = this.i18n(routes)
       },
       async getRoles() {
-        const res = await getRoles()
-        this.rolesList = res.data
+        getRoles(this.inf).then(res => {
+          // console.log(res)
+          this.rolesList = res.data
+        }).catch(err => {
+          this.rolesList = false
+        })
+
       },
       i18n(routes) {
         const app = routes.map(route => {

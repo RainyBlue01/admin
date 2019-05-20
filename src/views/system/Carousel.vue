@@ -14,7 +14,7 @@
               <el-row>
                 <el-col :span="8">
                   <el-form-item label-width="120px" label="轮播图类型:" class="postInfo-container-item">
-                    <el-select v-model="res.carouselType" placeholder="轮播图类型">
+                    <el-select @change="getCarousel" v-model="res.carouselType" placeholder="轮播图类型">
                       <i slot="prefix" class="el-input__icon el-icon-rank"></i>
                       <el-option
                         v-for="item in carouselTypeList"
@@ -28,7 +28,7 @@
 
                 <el-col :span="8">
                   <el-form-item style="padding: 0" label-width="120px" label="轮播图对应内容:" class="postInfo-container-item">
-                    <el-select v-model="res.carouselType" placeholder="轮播图类型">
+                    <el-select v-model="res.carouselDes" placeholder="轮播图对应内容">
                       <i slot="prefix" class="el-input__icon el-icon-rank"></i>
                         <el-input></el-input>
                       <el-option
@@ -61,6 +61,7 @@
 <script>
   import MDinput from '@/components/MDinput'
   import Upload from '@/components/Upload/SingleImage'
+  import {getCarouselList,updateCarousel} from '@/api/system'
   export default {
     name: 'fileUpload',
     components: { MDinput,Upload},
@@ -71,7 +72,8 @@
           id:'',
         },
         res:{
-          carouselType:''
+          carouselType:'',
+          carouselDes:'',
         },
         carouselTypeList:[
           {label:'首页',type:0},
@@ -82,9 +84,26 @@
           ]
       }
     },
+    watch: {
+      res: function (val) {
+          console.log(res)
+      }
+    },
     methods: {
+      getCarousel(){
+        console.log(this.res.carouselType)
+        let data={}
+        data.id = this.res.carouselType
+        getCarouselList(data).then(res=>{
+          this.postForm = res
+        })
+      },
       submitForm() {
-
+        updateCarousel(this.res).then(res=>{
+          console.log(res)
+        }).catch(err=>{
+          console.log(err)
+        })
       },
       draftForm() {
       },

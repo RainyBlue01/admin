@@ -19,7 +19,6 @@
     <el-table
       :key="tableKey"
       v-loading="listLoading"
-      v-if="this.list !== false"
       :data="list"
       fit
       highlight-current-row

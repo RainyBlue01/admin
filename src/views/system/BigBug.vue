@@ -107,7 +107,7 @@
 </template>
 
 <script>
-  import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+  import { getBigList,cancelTop,setBigUser,setTop} from '@/api/biguser'
   import Upload from '@/components/Upload/SingleImage'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
@@ -204,14 +204,17 @@
       },
       getList() {
         this.listLoading = true
-        fetchList(this.listQuery).then(response => {
-          this.list = response.data.items
-          this.total = response.data.total
-
-          // Just to simulate the time of the request
+        getBigList(this.inf).then(res => {
+          // console.log(res)
+          this.list = res.items
+          this.total = res.total
           setTimeout(() => {
             this.listLoading = false
           }, 1.5 * 1000)
+        }).catch(err => {
+          this.list = false
+          console.log(err)
+          this.listLoading = false
         })
       },
       handleFilter() {
