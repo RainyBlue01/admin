@@ -1,16 +1,14 @@
 <template>
   <div class="createPost-container">
     <el-form ref="postForm" :model="postForm"  class="form-container">
-        <el-button  style="margin-left: 10px;" type="success" @click="submitForm">
+        <el-button  style="position: absolute;top:10px; right: 10px;" type="success" @click="submitForm">
           上传
         </el-button>
       <div class="createPost-main-container">
         <el-row>
           <el-col :span="24">
-            <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
-                轮播图设置
-              </MDinput>
+            <el-form-item style="margin-bottom: 40px;border-bottom: 1px solid cornflowerblue;" prop="title">
+             <p style="font-size: 20px">轮播图设置</p>
             </el-form-item>
             <div class="postInfo-container">
               <el-row>

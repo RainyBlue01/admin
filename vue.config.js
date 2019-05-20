@@ -27,7 +27,7 @@ module.exports = {
     host: 'localhost',
     port: port,
     proxy: {
-      '/admin/v1': {
+      '/web/v1': {
         target: process.env.SERVER_PROXY,
         changeOrigin: true
       }

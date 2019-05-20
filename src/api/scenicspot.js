@@ -24,7 +24,7 @@ export function updateScenic(data) {
   })
 }
 
-export function updateScenic(data) {
+export function updateScenicStatus(data) {
   return request({
     url: '/spot/updateStatus',
     method: 'put',

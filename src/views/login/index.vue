@@ -14,10 +14,10 @@
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginForm.username"
-          :placeholder="$t('login.username')"
-          name="username"
+          ref="phone"
+          v-model="loginForm.phone"
+          placeholder="电话"
+          name="phone"
           type="text"
           auto-complete="on"
         />
@@ -51,7 +51,7 @@
       </el-button>
 
       <div style="position:relative">
-        <div class="tips">
+        <!--<div class="tips">
           <span>{{ $t('login.username') }} : admin</span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
         </div>
@@ -60,11 +60,11 @@
             {{ $t('login.username') }} : editor
           </span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
-        </div>
+        </div>-->
 
-        <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
+       <!-- <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
           {{ $t('login.thirdparty') }}
-        </el-button>
+        </el-button>-->
       </div>
     </el-form>
 
@@ -104,11 +104,11 @@ export default {
     }
     return {
       loginForm: {
-        username: 'lisi',
+        phone: '13330615539',
         password: '123'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        phone: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       passwordType: 'password',
@@ -130,8 +130,8 @@ export default {
     // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
-    if (this.loginForm.username === '') {
-      this.$refs.username.focus()
+    if (this.loginForm.phone === '') {
+      this.$refs.phone.focus()
     } else if (this.loginForm.password === '') {
       this.$refs.password.focus()
     }
@@ -164,6 +164,7 @@ export default {
     },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
+        console.log(valid)
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)

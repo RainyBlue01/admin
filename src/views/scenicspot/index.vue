@@ -19,6 +19,7 @@
     <el-table
       :key="tableKey"
       v-loading="listLoading"
+      v-if="this.list !== false"
       :data="list"
       fit
       highlight-current-row
@@ -133,7 +134,7 @@
 </template>
 
 <script>
-  import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+  import {getScenicList,addScenic,updateScenic,delScenic,updateScenicStatus } from '@/api/scenicspot'
   import Upload from '@/components/Upload/SingleImage'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
@@ -205,6 +206,17 @@
             label: '15天以上'
           }
         ],
+        inf: {
+          'condition': {
+            'cityId': null,
+            'search': null
+          },
+          'page': 1,
+          'size': 10
+        },
+        res: {
+          records: []
+        },
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
@@ -246,16 +258,29 @@
       select(selection){
         console.log(selection)
       },
-      getList() {
+      // getList() {
+      //   this.listLoading = true
+      //   fetchList(this.listQuery).then(response => {
+      //     this.list = response.data.items
+      //     this.total = response.data.total
+      //
+      //     // Just to simulate the time of the request
+      //
+      //   })
+      // },
+      getList () {
         this.listLoading = true
-        fetchList(this.listQuery).then(response => {
-          this.list = response.data.items
-          this.total = response.data.total
-
-          // Just to simulate the time of the request
+        getScenicList(this.inf).then(res => {
+          // console.log(res)
+          this.list = res.items
+          this.total = res.total
           setTimeout(() => {
             this.listLoading = false
           }, 1.5 * 1000)
+        }).catch(err => {
+          this.list = false
+          console.log(err)
+          this.listLoading = false
         })
       },
       handleFilter() {
