@@ -41,10 +41,10 @@ service.interceptors.response.use(
       })
       return Promise.reject(res.message || 'error')
     } else {
-      if (response.config.url === '/web/v1/login') {
+      if (response.config.url === '/admin/v1/login') {
         res.content.token = response.headers['x-auth-token']
       }
-      console.log(res)
+      // console.log(res)
       return res
     }
   },
