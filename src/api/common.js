@@ -8,3 +8,10 @@ export function SignatureGET(pv) {
     url: 'oss/upload/signature?fileName=' + pv
   })
 }
+
+export function getAllArea() {
+  return request({
+    method: 'get',
+    url: 'area/list'
+  })
+}

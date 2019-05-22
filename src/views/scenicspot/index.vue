@@ -1,11 +1,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="inf.search" placeholder="关键字搜索" style="width: 200px;" class="filter-item"
+      <el-input v-model="inf.condition.search" placeholder="关键字搜索" style="width: 200px;" class="filter-item"
                 @keyup.enter.native="handleFilter"/>
-      <el-select v-model="inf.cityId" placeholder="城市名称" clearable style="width: 130px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item"/>
-      </el-select>
+      <el-cascader style="top: -4px;"
+                   @change="handleChange"
+                   placeholder="请选择城市"
+                   :show-all-levels="false"
+                   :options="importanceOptions" v-model="allId"
+      ></el-cascader>
       <el-button v-waves class="filter-item ml" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
@@ -50,10 +53,10 @@
           <span>{{ scope.row.tourDuration }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="收费情况" width="110" align="center">
+      <el-table-column label="状态" width="110" align="center">
         <template slot-scope="scope">
-          <span style="color:red;">
-            {{scope.row.tourDuration.length > 10 ? scope.row.tourDuration.Substring(0,10):scope.row.tourDuration}}
+          <span >
+            {{scope.row.status==1 ? '上架中':'下架中'}}
           </span>
         </template>
       </el-table-column>
@@ -73,16 +76,19 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             {{ $t('table.edit') }}
           </el-button>
-          <el-button size="mini" type="danger" @click="handleModifyStatus(row,'deleted')">
+          <el-button v-if="row.status == 0" type="success" size="mini" @click="handStatus(row)">上架</el-button>
+          <el-button v-else type="primary" size="mini" @click="handStatus(row)">下架</el-button>
+          <el-button size="mini" type="danger" @click="handleModifyStatus(row)">
             {{ $t('table.delete') }}
           </el-button>
         </template>
       </el-table-column>
     </el-table>
     <div class="next-footer">
-      <el-button class="foot-upload" size="medium" type="primary">删除</el-button>
+      <el-button class="foot-upload" size="medium" type="primary" @click="delAll">批量删除</el-button>
+      <el-button class="foot-upload" size="medium" type="primary" @click="upLoadAll">批量改变状态</el-button>
     </div>
-    <pagination v-show="total>0" :total="total" :page.sync="inf.page" :limit.sync="inf.size"
+    <pagination v-show="total>0" :total="total" :page.sync="inf.current" :limit.sync="inf.size"
                 @pagination="getList"/>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
@@ -92,12 +98,15 @@
             <el-input v-model="scdes.name"/>
           </el-form-item>
           <el-form-item label="地理位置">
-            <el-select v-model="scdes.cityId" style="width: 164px" class="filter-item" placeholder="Please select">
-              <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item"/>
-            </el-select>
-            <el-input v-model="keyword" style="width: 162px"/>
+            <el-cascader ref="cascaderAddr"
+                         @change="handleDialogChange"
+                         placeholder="请选择省市"
+                         :options="importanceOptions" v-model="areaId"
+            ></el-cascader>
+            <el-input v-on:input="inputForMap" v-model="keyword" placeholder="请填写景点地址或名称" style="width: 200px"/>
+            <span  v-if="checkMap" style="margin-left: 10px; font-size: 12px; color: #9da408">请点击地图生成坐标</span>
             <baidu-map v-if="checkMap" :scroll-wheel-zoom="true" class="map" :zoom="15">
-              <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="keyword" :auto-viewport="true"
+              <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="scdes.address" :auto-viewport="true"
                                :panel="false"></bm-local-search>
               <!--<bm-marker  :position="{lng: 116.404, lat: 39.915}" :dragging="true" animation="BMAP_ANIMATION_BOUNCE">-->
               <!--<bm-label content="我爱北京天安门" :labelStyle="{color: 'red', fontSize : '24px'}" :offset="{width: -35, height: 30}"/>-->
@@ -108,8 +117,11 @@
           <el-form-item label="推荐指数">
             <el-rate style="margin-top: 10px" v-model="scdes.recommendIndex" allow-half show-score :max="10"/>
           </el-form-item>
-          <el-form-item label="收费情况">
+          <el-form-item label="收费情况" >
             <el-input v-model="scdes.fee"/>
+          </el-form-item>
+          <el-form-item label="游玩天数">
+            <el-input v-model="scdes.tourDuration"/>
           </el-form-item>
           <el-form-item label="景点描述">
             <el-input type="textarea" v-model="scdes.introduction"/>
@@ -141,8 +153,6 @@
               :on-success="uploadCanSuccess"
               :on-error="uploadCanError"
               :on-change="OnCanChange"
-              :on-preview="handlePictureCardPreview"
-              :on-remove="handleRemove"
               :limit = '6'
             ><i class="el-icon-plus icon"></i>
             </el-upload>
@@ -172,10 +182,10 @@
 </template>
 
 <script>
-  import { getScenicList, addScenic, updateScenic, delScenic, updateScenicStatus } from '@/api/scenicspot'
+  import { getScenicList, addScenic, updateScenic, delScenic, updateScenicStatus ,getScenicDes} from '@/api/scenicspot'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
-  import { SignatureGET } from '@/api/common.js'
+  import { SignatureGET ,getAllArea} from '@/api/common.js'
   import { LoginCheck } from '@/utils/loginCheck.js'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
@@ -198,62 +208,40 @@
     },
     data() {
       return {
+        allId:null,
+        area:'',
         tableKey: 0,
+        areaId:null,
         list: false,
         total: 0,
+        keywords:'',
         keyword: '',
         checkMap: false,
         listLoading: true,
-        importanceOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        importanceOptions: [],
         scdes: {
           fee: 0,
           introduction: '',
           recommendIndex: 0,
-          address: null,
-          cityId: 'published',
+          provinceId:'',
+          address: '',
+          cityId: '',
           mainUrl: '',
-          spotDetaillImgAddVOS:[],
+          coordinate:'',
+          spotDetaillImgAddVOS:{},
+          tourDuration:'',
         },
         ossinf: '',
         ossCaninf: '',
+        sele:'',
         // serverUrl: 'https://testihospitalapi.ebaiyihui.com/oss/api/file/store/v1/saveFile', // 这里写你要上传的图片服务器地址
         serverUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/', // 这里写你要上传的图片服务器地址
-        calendarTypeOptions: [
-          {
-            value: null,
-            label: '全部'
-          },
-          {
-            value: 0,
-            label: '1天以内'
-          },
-          {
-            value: 1,
-            label: '2~3天'
-          },
-          {
-            value: 2,
-            label: '3~5天'
-          },
-          {
-            value: 3,
-            label: '5~7天'
-          },
-          {
-            value: 4,
-            label: '7~15天'
-          },
-          {
-            value: 5,
-            label: '15天以上'
-          }
-        ],
         inf: {
           'condition': {
             'cityId': null,
             'search': null
           },
-          'page': 1,
+          'current': 1,
           'size': 10
         },
         res: {
@@ -275,39 +263,120 @@
     },
     created() {
       this.getList()
+      this.getArea()
     },
     methods: {
+      upLoadAll(){
+        let a = []
+        if(this.sele == []){
+          this.$message({
+            message: '请选择景点',
+            type: 'error'
+          })
+        }else{
+          this.sele.map(v=>{
+            a.push({id:v.id,status:v.status == 1 ? 0 : 1 })
+          })
+          updateScenicStatus(a).then(res=>{
+            this.getList()
+            this.$message({
+              message: '操作成功',
+              type: 'success'
+            })
+          })
+        }
+      },
+      delAll(){
+        let a = []
+        if(this.sele == []){
+          this.$message({
+            message: '请选择景点',
+            type: 'error'
+          })
+        }else{
+          this.sele.map(v=>{
+            a.push(v.id)
+          })
+          delScenic(a).then(res=>{
+            this.getList()
+            this.$message({
+              message: '操作成功',
+              type: 'success'
+            })
+          })
+        }
+      },
+      handStatus(row){
+        let parmas = [{
+          id:row.id,
+          status:row.status == 1 ? 0 : 1
+        }]
+        console.log(parmas)
+        updateScenicStatus(parmas).then(res=>{
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          })
+          this.getList()
+        })
+      },
+      inputForMap(){
+        this.scdes.address = this.keyword + this.keywords
+      },
+      handleDialogChange(value){
+       let ar = this.$refs['cascaderAddr'].currentLabels
+        this.scdes.cityId=value[1]
+        this.scdes.provinceId=value[0]
+        this.scdes.address = ar[0]+ar[1]
+        this.checkMap = true
+      },
+      handleChange () {
+        this.inf.condition.cityId = this.allId[1]
+      },
       sendRes(poi) {
         console.log(poi)
+        this.scdes.coordinate =  JSON.stringify(poi.point)
+        this.scdes.address = poi.address
       },
       checkMa(pois) {
-        console.log(pois)
       },
       select(selection) {
-        console.log(selection)
+        this.sele=selection
+      },
+      getArea(){
+        getAllArea().then(res=>{
+          this.importanceOptions = res.content
+          let a = { 'label': '全部',
+            'value': null }
+          this.importanceOptions.push(a)
+        })
       },
       getList() {
         this.listLoading = true
         getScenicList(this.inf).then(res => {
+          this.listLoading = false
           this.list = res.content.records
           this.total = res.content.total
-          setTimeout(() => {
-            this.listLoading = false
-          }, 1.5 * 1000)
         }).catch(err => {
           this.listLoading = false
         })
       },
       handleFilter() {
-        this.inf.page = 1
+        this.inf.current = 1
         this.getList()
       },
-      handleModifyStatus(row, status) {
-        this.$message({
-          message: '操作成功',
-          type: 'success'
+      handleModifyStatus(row) {
+        let parmas = []
+        parmas.push(row.id)
+        delScenic(parmas).then(res=>{
+          this.getList()
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          })
         })
-        row.status = status
+
+
       },
       sortChange(data) {
         const { prop, order } = data
@@ -345,64 +414,36 @@
       createData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            console.log(this.scdes)
+            addScenic(this.scdes).then((res)=>{
+              this.dialogFormVisible = false
+              this.getList()
+            })
           }
         })
       },
+      //点击编辑触发事件
       handleUpdate(row) {
-        this.temp = Object.assign({}, row) // copy obj
-        this.temp.timestamp = new Date(this.temp.timestamp)
-        this.dialogStatus = 'update'
-        this.dialogFormVisible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].clearValidate()
+        getScenicDes(row.id).then(res=>{
+          this.scdes = res.content
+          this.scdes.spotDetaillImgAddVOS = res.content.spotDetailImgVOS
+          delete  this.scdes.spotDetailImgVOS
+          this.dialogStatus = 'update'
+          this.dialogFormVisible = true
+          this.$nextTick(() => {
+            this.$refs['dataForm'].clearValidate()
+          })
         })
       },
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            this.dialogFormVisible = false
+            console.log(this.scdes)
+            updateScenic(this.scdes).then((res)=>{
+                this.dialogFormVisible = false
+                this.getList()
+              })
           }
         })
-      },
-      handleDelete(row) {
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
-        })
-        const index = this.list.indexOf(row)
-        this.list.splice(index, 1)
-      },
-      handleFetchPv(pv) {
-        fetchPv(pv).then(response => {
-          this.pvData = response.data.pvData
-          this.dialogPvVisible = true
-        })
-      },
-      handleDownload() {
-        this.downloadLoading = true
-        import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-          const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-          const data = this.formatJson(filterVal, this.list)
-          excel.export_json_to_excel({
-            header: tHeader,
-            data,
-            filename: 'table-list'
-          })
-          this.downloadLoading = false
-        })
-      },
-      formatJson(filterVal, jsonData) {
-        return jsonData.map(v => filterVal.map(j => {
-          if (j === 'timestamp') {
-            return parseTime(v[j])
-          } else {
-            return v[j]
-          }
-        }))
       },
       // 选择文件后请求权限并上传
       OnChange(file) {
@@ -434,8 +475,6 @@
       // 选择文件后请求权限并上传
       OnCanChange(file) {
         if (LoginCheck()) {
-          if (this.ossCaninf == '') {
-            console.log(this.ossCaninf)
             var myDate = new Date()
             var mytime = Date.parse(myDate)     //获取当前时间
             SignatureGET(mytime).then(res => {
@@ -443,19 +482,14 @@
               console.log(res)
             }).then(() => {
               this.$refs.bgImguploadCan.submit()
-            }).catch(()=>{
-              this.scdes.spotDetaillImgAddVOS = []
             })
-          }else {
-            this.ossCaninf = ''
           }
-        }
       },
       uploadCanError() {
         this.$message.error('图片插入失败')
       },
       uploadCanSuccess(res, file) {
-        this.scdes.spotDetaillImgAddVOS.push(this.serverUrl + this.ossinf.key)
+        this.scdes.spotDetaillImgAddVOS.push({'url' : this.serverUrl + this.ossCaninf.key})
         this.ossCaninf = ''
       }
     }
@@ -482,19 +516,19 @@
   }
 
   .el-upload--picture-card {
-    width: 180px !important;
+    width: 185px !important;
     height: 100px !important;
   }
 
   .icon {
-    width: 180px;
+    width: 185px;
     height: 100px;
     display: flex;
     justify-content: center;
     align-items: center;
   }
   .el-upload-list__item{
-    width: 180px!important;
+    width: 185px!important;
     height: 100px!important;
   }
 </style>

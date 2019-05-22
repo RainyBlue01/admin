@@ -8,6 +8,14 @@ export function getScenicList(data) {
   })
 }
 
+
+export function getScenicDes(id) {
+  return request({
+    url: '/spot/'+ id,
+    method: 'get',
+  })
+}
+
 export function addScenic(data) {
   return request({
     url: '/spot/add',
@@ -32,10 +40,11 @@ export function updateScenicStatus(data) {
   })
 }
 
-export function delScenic(id) {
+export function delScenic(data) {
   return request({
-    url: '/spot/'+id,
+    url: '/spot/delete',
     method: 'delete',
+    data
   })
 }
 
