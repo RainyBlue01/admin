@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { MessageBox, Message } from 'element-ui'
+import { Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
@@ -14,11 +14,12 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // Do something before request is sent
+    // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改 先获取VueX中的数据，没有再获取LocalStorage
     if (store.getters.token) {
-      // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
-      if(getToken()){
-        config.headers['X-Auth-Token'] = JSON.parse(getToken())
-      }
+      // console.log(store.getters.token)
+      config.headers['X-Auth-Token'] = store.getters.token
+    } else {
+      config.headers['X-Auth-Token'] = JSON.parse(getToken())
     }
     return config
   },
@@ -41,10 +42,10 @@ service.interceptors.response.use(
       })
       return Promise.reject(res.message || 'error')
     } else {
-      if (response.config.url === '/web/v1/login') {
+      if (response.config.url === '/admin/v1/login') {
         res.content.token = response.headers['x-auth-token']
       }
-      console.log(res)
+      // console.log(res)
       return res
     }
   },

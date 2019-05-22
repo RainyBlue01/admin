@@ -9,15 +9,15 @@
         <lang-select class="set-language" />
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="phone">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginForm.username"
-          :placeholder="$t('login.username')"
-          name="username"
+          ref="phone"
+          v-model="loginForm.phone"
+          :placeholder="$t('login.phone')"
+          name="phone"
           type="text"
           auto-complete="on"
         />
@@ -52,12 +52,12 @@
 
       <div style="position:relative">
         <div class="tips">
-          <span>{{ $t('login.username') }} : admin</span>
+          <span>{{ $t('login.phone') }} : admin</span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
         </div>
         <div class="tips">
           <span style="margin-right:18px;">
-            {{ $t('login.username') }} : editor
+            {{ $t('login.phone') }} : editor
           </span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
         </div>
@@ -79,7 +79,7 @@
 </template>
 
 <script>
-// import { validUsername } from '@/utils/validate'
+// import { validphone } from '@/utils/validate'
 import LangSelect from '@/components/LangSelect'
 import SocialSign from './components/SocialSignin'
 
@@ -87,9 +87,9 @@ export default {
   name: 'Login',
   components: { LangSelect, SocialSign },
   data() {
-    const validateUsername = (rule, value, callback) => {
+    const validatephone = (rule, value, callback) => {
       callback()
-      // if (!validUsername(value)) {
+      // if (!validphone(value)) {
       //   callback(new Error('Please enter the correct user name'))
       // } else {
       //
@@ -104,11 +104,11 @@ export default {
     }
     return {
       loginForm: {
-        username: 'lisi',
+        phone: '13330615539',
         password: '123'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        phone: [{ required: true, trigger: 'blur', validator: validatephone }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       passwordType: 'password',
@@ -130,8 +130,8 @@ export default {
     // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
-    if (this.loginForm.username === '') {
-      this.$refs.username.focus()
+    if (this.loginForm.phone === '') {
+      this.$refs.phone.focus()
     } else if (this.loginForm.password === '') {
       this.$refs.password.focus()
     }
@@ -167,6 +167,7 @@ export default {
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
+          // console.log('ssss')
             .then(() => {
               this.$router.push({ path: this.redirect || '/' })
               this.loading = false
