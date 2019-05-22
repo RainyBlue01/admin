@@ -41,7 +41,8 @@
       </el-table-column>
       <el-table-column label="景点描述" align="center" width="200">
         <template slot-scope="scope">
-          <span style="overflow : hidden;text-overflow: ellipsis; display: -webkit-box;-webkit-line-clamp: 2; -webkit-box-orient: vertical">{{ scope.row.introduction  }}</span>
+          <span
+            style="overflow : hidden;text-overflow: ellipsis; display: -webkit-box;-webkit-line-clamp: 2; -webkit-box-orient: vertical">{{ scope.row.introduction  }}</span>
         </template>
       </el-table-column>
       <el-table-column label="游玩天数" align="center">
@@ -84,9 +85,9 @@
     <pagination v-show="total>0" :total="total" :page.sync="inf.page" :limit.sync="inf.size"
                 @pagination="getList"/>
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <div style="height: 400px;overflow-y: scroll;">
-        <el-form ref="dataForm" :rules="rules" :model="scdes" label-position="left" label-width="70px">
+        <el-form style="padding:0 20px;" ref="dataForm" :rules="rules" :model="scdes" label-position="left" label-width="70px">
           <el-form-item label="景点名称">
             <el-input v-model="scdes.name"/>
           </el-form-item>
@@ -96,17 +97,16 @@
             </el-select>
             <el-input v-model="keyword" style="width: 162px"/>
             <baidu-map v-if="checkMap" :scroll-wheel-zoom="true" class="map" :zoom="15">
-              <bm-local-search  @infohtmlset="sendRes" @markersset="checkMa" :keyword="keyword" :auto-viewport="true"
+              <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="keyword" :auto-viewport="true"
                                :panel="false"></bm-local-search>
               <!--<bm-marker  :position="{lng: 116.404, lat: 39.915}" :dragging="true" animation="BMAP_ANIMATION_BOUNCE">-->
               <!--<bm-label content="我爱北京天安门" :labelStyle="{color: 'red', fontSize : '24px'}" :offset="{width: -35, height: 30}"/>-->
               <!--</bm-marker>-->
               <!--<bm-geolocation :locationSuccess="checkMa" anchor="BMAP_ANCHOR_BOTTOM_RIGHT" :showAddressBar="true" :autoLocation="true"></bm-geolocation>-->
             </baidu-map>
-            </el-col>
           </el-form-item>
           <el-form-item label="推荐指数">
-            <el-rate style="margin-top: 10px" v-model="scdes.recommendIndex"  :max="10" />
+            <el-rate style="margin-top: 10px" v-model="scdes.recommendIndex" allow-half show-score :max="10"/>
           </el-form-item>
           <el-form-item label="收费情况">
             <el-input v-model="scdes.fee"/>
@@ -115,33 +115,36 @@
             <el-input type="textarea" v-model="scdes.introduction"/>
           </el-form-item>
           <el-form-item label="封面图片">
-            <el-dialog :visible.sync="dialogVisible">
-              <img width="100%" :src="dialogImageUrl" alt="">
-            </el-dialog>
             <el-upload
               ref="bgImgupload"
               :data="ossinf"
               list-type="picture-card"
               :action="serverUrl"
-              :headers="header"
-              :show-file-list="false"
               :multiple="false"
               :auto-upload="false"
               :on-success="bgImguploadSuccess"
               :on-error="uploadError"
-              :before-upload="beforeUpload"
               :on-change="OnChange"
-            ><i class="el-icon-plus"></i>
+              :file-list="scdes.mainUrl"
+              style="width: 200px;height: 100px"
+            ><i class="el-icon-plus icon"></i>
             </el-upload>
           </el-form-item>
           <el-form-item label="轮播图">
-            <el-dialog :visible.sync="dialogVisible">
-              <img width="100%" :src="dialogImageUrl" alt="">
-            </el-dialog>
             <el-upload
+              ref="bgImguploadCan"
+              :data="ossCaninf"
               list-type="picture-card"
-              action="https://httpbin.org/post"
-            ><i class="el-icon-plus"></i>
+              :action="serverUrl"
+              :file-list="scdes.spotDetaillImgAddVOS"
+              :auto-upload="false"
+              :on-success="uploadCanSuccess"
+              :on-error="uploadCanError"
+              :on-change="OnCanChange"
+              :on-preview="handlePictureCardPreview"
+              :on-remove="handleRemove"
+              :limit = '6'
+            ><i class="el-icon-plus icon"></i>
             </el-upload>
           </el-form-item>
         </el-form>
@@ -170,15 +173,15 @@
 
 <script>
   import { getScenicList, addScenic, updateScenic, delScenic, updateScenicStatus } from '@/api/scenicspot'
-  import Upload from '@/components/Upload/SingleImage'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
+  import { SignatureGET } from '@/api/common.js'
   import { LoginCheck } from '@/utils/loginCheck.js'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
   export default {
     name: 'ComplexTable',
-    components: { Pagination, Upload },
+    components: { Pagination },
     directives: { waves },
     filters: {
       statusFilter(status) {
@@ -199,28 +202,22 @@
         list: false,
         total: 0,
         keyword: '',
-        checkMap:false,
+        checkMap: false,
         listLoading: true,
-        postForm: { image_uri: '' },
         importanceOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        dialogVisible:false,
-        dialogImageUrl:[],
-        scdes:{
-          fee:'',
-          introduction:'',
-          recommendIndex : 0,
-          address:null,
-          cityId:"published",
-          mainUrl:'',
+        scdes: {
+          fee: 0,
+          introduction: '',
+          recommendIndex: 0,
+          address: null,
+          cityId: 'published',
+          mainUrl: '',
+          spotDetaillImgAddVOS:[],
         },
-        quillUpdateImg: false, // 根据图片上传状态来确定是否显示loading动画，刚开始是false,不显示
-        ossinf: {},
+        ossinf: '',
+        ossCaninf: '',
         // serverUrl: 'https://testihospitalapi.ebaiyihui.com/oss/api/file/store/v1/saveFile', // 这里写你要上传的图片服务器地址
         serverUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/', // 这里写你要上传的图片服务器地址
-        header: {
-          // 'x-oss-security-token': 'abc'
-          // token: 'abs'
-        }, // 有的图片服务器要求请求头需要有token
         calendarTypeOptions: [
           {
             value: null,
@@ -262,7 +259,7 @@
         res: {
           records: []
         },
-        statusOptions: [],
+        statusOptions: [1, 2],
         showReviewer: false,
         dialogFormVisible: false,
         dialogStatus: '',
@@ -272,9 +269,7 @@
         },
         dialogPvVisible: false,
         pvData: [],
-        rules: {
-
-        },
+        rules: {},
         downloadLoading: false
       }
     },
@@ -330,12 +325,13 @@
       },
       resetTemp() {
         this.scdes = {
-          fee:'',
-          introduction:'',
-          recommendIndex:'',
-          address:'',
-          cityId:'',
-          mainUrl:''
+          fee: '',
+          introduction: '',
+          recommendIndex: 0,
+          address: '',
+          cityId: '',
+          spotDetaillImgAddVOS:[],
+          mainUrl: []
         }
       },
       handleCreate() {
@@ -409,54 +405,58 @@
         }))
       },
       // 选择文件后请求权限并上传
-      OnChange (file) {
+      OnChange(file) {
         if (LoginCheck()) {
-          SignatureGET(file.name).then(res => {
-            this.ossinf = res
-            console.log(res)
-          }).then(() => {
-            this.$refs.bgImgupload.submit()
-          })
-        } else {
-          this.$confirm('先去登录一下吧？', '未登录', {
-            distinguishCancelAndClose: true,
-            confirmButtonText: '好的',
-            cancelButtonText: '不了，我先看看'
-          })
-            .then(() => {
-              this.$router.push({ name: 'Login', params: { url: this.$route.fullPath } })
+          if (this.ossinf == '') {
+            var myDate = new Date()
+            var mytime = Date.parse(myDate)     //获取当前时间
+            SignatureGET(mytime).then(res => {
+              this.ossinf = res.content
+              console.log(res)
+            }).then(() => {
+              this.$refs.bgImgupload.submit()
+            }).catch((err)=>{
+              console.log(err)
+              this.scdes.mainUrl = ''
             })
+          } else {
+            this.ossinf = ''
+          }
         }
       },
-      // 图片上传前
-      beforeUpload (file) {
+      bgImguploadSuccess(res, file) {
+        this.scdes.mainUrl = this.serverUrl + this.ossinf.key
+      },
 
-      },
-      bgImguploadSuccess (res, file) {
-        console.log(file)
-        this.inf.bgImage = this.serverUrl + this.ossinf.key
-      },
-      uploadSuccess (res, file) {
-        console.log(file)
-        this.$message({
-          message: '上传成功',
-          type: 'success'
-        })
-        // res为图片服务器返回的数据
-        // 获取富文本组件实例
-        let quill = this.$refs.myQuillEditor.quill
-        // 如果上传成功
-        // console.log(res)
-        // 获取光标所在位置
-        let length = quill.getSelection().index
-        // 插入图片  res.url为服务器返回的图片地址
-        quill.insertEmbed(length, 'image', this.serverUrl + this.ossinf.key)
-        // 调整光标到最后
-        quill.setSelection(length + 1)
-      },
-      // 富文本图片上传失败
-      uploadError () {
+      uploadError() {
         this.$message.error('图片插入失败')
+      },
+      // 选择文件后请求权限并上传
+      OnCanChange(file) {
+        if (LoginCheck()) {
+          if (this.ossCaninf == '') {
+            console.log(this.ossCaninf)
+            var myDate = new Date()
+            var mytime = Date.parse(myDate)     //获取当前时间
+            SignatureGET(mytime).then(res => {
+              this.ossCaninf = res.content
+              console.log(res)
+            }).then(() => {
+              this.$refs.bgImguploadCan.submit()
+            }).catch(()=>{
+              this.scdes.spotDetaillImgAddVOS = []
+            })
+          }else {
+            this.ossCaninf = ''
+          }
+        }
+      },
+      uploadCanError() {
+        this.$message.error('图片插入失败')
+      },
+      uploadCanSuccess(res, file) {
+        this.scdes.spotDetaillImgAddVOS.push(this.serverUrl + this.ossinf.key)
+        this.ossCaninf = ''
       }
     }
   }
@@ -479,5 +479,22 @@
 
   .next-footer {
     margin: 20px 20px;
+  }
+
+  .el-upload--picture-card {
+    width: 180px !important;
+    height: 100px !important;
+  }
+
+  .icon {
+    width: 180px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .el-upload-list__item{
+    width: 180px!important;
+    height: 100px!important;
   }
 </style>
