@@ -94,45 +94,35 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" @close="resetTemp()">
       <div style="height: 400px;overflow-y: scroll;">
         <el-form :model="scdes" style="padding:0 20px;" ref="dataForm" :rules="rules" label-position="left"
-                 label-width="70px">
-          <el-form-item label="景点名称" prop="name">
+                 label-width="90px">
+          <el-form-item label="路书标题" prop="name">
             <el-input v-model="scdes.name"/>
           </el-form-item>
-          <el-form-item label="地理位置" prop="areaId">
+          <el-form-item label="目的地位置" prop="areaId">
             <el-cascader ref="cascaderAddr"
                          @change="handleDialogChange"
                          placeholder="请选择省市"
                          filterable
                          :options="importanceOptions" v-model="areaId"
             ></el-cascader>
-            <el-input v-on:input="inputForMap" v-model="keyword" placeholder="请填写景点地址或名称" style="width: 200px"/>
-            <span v-if="checkMap" style="margin-left: 10px; font-size: 12px; color: #9da408">请点击地图生成坐标</span>
-            <baidu-map v-if="checkMap" :scroll-wheel-zoom="true" class="map" :zoom="15" :center="scdes.coordinate">
-              <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="scdes.address"
-                               :auto-viewport="true"
-                               v-model="scdes.coordinate" :panel="false"></bm-local-search>
-              <!--<bm-marker  :position="{lng: 116.404, lat: 39.915}" :dragging="true" animation="BMAP_ANIMATION_BOUNCE">-->
-              <!--<bm-label content="我爱北京天安门" :labelStyle="{color: 'red', fontSize : '24px'}" :offset="{width: -35, height: 30}"/>-->
-              <!--</bm-marker>-->
-              <!--<bm-geolocation :locationSuccess="checkMa" anchor="BMAP_ANCHOR_BOTTOM_RIGHT" :showAddressBar="true" :autoLocation="true"></bm-geolocation>-->
-            </baidu-map>
+            <el-input v-on:input="inputForMap" v-model="keyword" placeholder="请填写目的地址或名称" style="width: 200px"/>
           </el-form-item>
           <el-form-item label="推荐指数" prop="recommendIndex">
             <el-rate style="margin-top: 10px" v-model="scdes.recommendIndex" allow-half show-score :max="10"/>
           </el-form-item>
-          <el-form-item label="收费情况" prop="fee">
-            <el-input v-model="scdes.fee"/>
-          </el-form-item>
-          <el-form-item label="游玩天数" prop="tourDuration">
+          <el-form-item label="行程天数" prop="tourDuration">
             <el-input v-model="scdes.tourDuration"/>
           </el-form-item>
-          <el-form-item label="景点描述" prop="introduction">
+          <el-form-item label="路书描述" prop="introduction">
             <el-input type="textarea" v-model="scdes.introduction"/>
+          </el-form-item>
+          <el-form-item label="其他描述" prop="fee">
+            <el-input type="textarea" v-model="scdes.otherDescription"/>
           </el-form-item>
           <el-form-item label="封面图片" prop="mainUrl">
             <el-upload
               ref="bgImgupload"
-              :data="ossinf"
+              :data="ossinf ? ossinf : {}"
               list-type="picture-card"
               :action="serverUrl"
               :multiple="false"
@@ -148,7 +138,7 @@
           <el-form-item label="轮播图" prop="spotDetaillImgAddVOS">
             <el-upload
               ref="bgImguploadCan"
-              :data="ossCaninf"
+              :data="ossCaninf ? ossCaninf : {}"
               list-type="picture-card"
               :action="serverUrl"
               :file-list="scdes.spotDetaillImgAddVOS"
@@ -217,23 +207,36 @@
         areaId: [],
         list: false,
         total: 0,
-        keywords: '',
         keyword: '',
-        checkMap: false,
         listLoading: true,
         importanceOptions: [],
         scdes: {
-          name: '',
-          fee: 0,
-          introduction: '',
-          recommendIndex: 0,
-          provinceId: '',
-          address: '',
-          cityId: '',
-          mainUrl: '',
-          coordinate: '',
-          spotDetaillImgAddVOS: {},
-          tourDuration: ''
+          "areaCode": "",
+          "daysTrip": 0,
+          "description": "",
+          "destination": "",
+          "headline": "",
+          "id": 0,
+          "otherDescription": "",
+          "publishStatus": 0,
+          "recommendationRate": 0,
+          "mainUrl":[],
+          "spotDetaillImgAddVOS":[],
+          "saveVos": [
+            {
+              "areaCode": "",
+              "daysNumber": 0,
+              "description": "",
+              "id": 0,
+              "latitude": 0,
+              "longitude": 0,
+              "roadBookId": 0,
+              "travelEnd": "",
+              "travelMileage": 0,
+              "travelStart": ""
+            }
+          ],
+          "travelMileage": 0
         },
         ossinf: '',
         ossCaninf: '',
@@ -327,14 +330,11 @@
         })
       },
       inputForMap() {
-        this.scdes.address = this.keyword + this.keywords
+        this.scdes.destination = this.keyword
       },
       handleDialogChange(value) {
         let ar = this.$refs['cascaderAddr'].currentLabels
-        this.scdes.cityId = value[1]
-        this.scdes.provinceId = value[0]
-        this.scdes.address = ar[0] + ar[1]
-        this.checkMap = true
+        this.scdes.areaCode = value[1]
       },
       handleChange() {
         this.inf.condition.destination = this.allId[1]
@@ -401,7 +401,6 @@
         this.handleFilter()
       },
       resetTemp() {
-        this.checkMap = false
         this.scdes.fee = 0
         this.scdes.introduction = ''
         this.scdes.name = ''
@@ -409,9 +408,9 @@
         this.scdes.provinceId = null
         this.scdes.address = ''
         this.scdes.cityId = null
-        this.scdes.mainUrl = ''
+        this.scdes.mainUrl = []
         this.scdes.coordinate = ''
-        this.scdes.spotDetaillImgAddVOS = {}
+        this.scdes.spotDetaillImgAddVOS = []
         this.scdes.tourDuration = ''
         this.areaId = []
         this.keyword = ''
@@ -452,10 +451,6 @@
           area.push(res.content.provinceId)
           area.push(res.content.cityId)
           this.areaId = area
-          if (res.content.coordinate) {
-            this.scdes.coordinate = eval('(' + res.content.coordinate + ')')
-            this.checkMap = true
-          }
           this.dialogFormVisible = true
         })
         console.log(this.scdes)
@@ -487,7 +482,7 @@
               this.$refs.bgImgupload.submit()
             }).catch((err) => {
               console.log(err)
-              this.scdes.mainUrl = ''
+              this.scdes.mainUrl = []
             })
           } else {
             this.ossinf = ''

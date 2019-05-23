@@ -133,15 +133,15 @@
           <el-form-item label="封面图片" prop="mainUrl">
             <el-upload
               ref="bgImgupload"
-              :data="ossinf"
+              :data="ossinf ? ossinf : {}"
               list-type="picture-card"
               :action="serverUrl"
               :multiple="false"
               :auto-upload="false"
               :on-success="bgImguploadSuccess"
+              :file-list="scdes.mainUrl "
               :on-error="uploadError"
               :on-change="OnChange"
-              :file-list="scdes.mainUrl"
               style="width: 200px;height: 100px"
             ><i class="el-icon-plus icon"></i>
             </el-upload>
@@ -149,10 +149,10 @@
           <el-form-item label="轮播图" prop="spotDetaillImgAddVOS">
             <el-upload
               ref="bgImguploadCan"
-              :data="ossCaninf"
+              :data="ossCaninf ? ossCaninf : {}"
               list-type="picture-card"
               :action="serverUrl"
-              :file-list="scdes.spotDetaillImgAddVOS"
+              :file-list="scdes.spotDetaillImgAddVOS ? scdes.spotDetaillImgAddVOS : []"
               :auto-upload="false"
               :on-success="uploadCanSuccess"
               :on-error="uploadCanError"
@@ -231,9 +231,9 @@
           provinceId: '',
           address: '',
           cityId: '',
-          mainUrl: '',
+          mainUrl: [],
           coordinate: '',
-          spotDetaillImgAddVOS: {},
+          spotDetaillImgAddVOS: [],
           tourDuration: ''
         },
         ossinf: '',
@@ -316,7 +316,6 @@
           id: row.id,
           status: row.status == 1 ? 0 : 1
         }]
-        console.log(parmas)
         updateScenicStatus(parmas).then(res => {
           this.$message({
             message: '操作成功',
@@ -339,7 +338,6 @@
         this.inf.condition.cityId = this.allId[1]
       },
       sendRes(poi) {
-        console.log(poi)
         this.scdes.coordinate = JSON.stringify(poi.point)
         this.keyword = poi.address
         this.scdes.address = poi.address
@@ -408,9 +406,9 @@
         this.scdes.provinceId = null
         this.scdes.address = ''
         this.scdes.cityId = null
-        this.scdes.mainUrl = ''
+        this.scdes.mainUrl = []
         this.scdes.coordinate = ''
-        this.scdes.spotDetaillImgAddVOS = {}
+        this.scdes.spotDetaillImgAddVOS = []
         this.scdes.tourDuration = ''
         this.areaId = []
         this.keyword = ''
@@ -445,6 +443,9 @@
           this.scdes = res.content
           this.scdes.spotDetaillImgAddVOS = res.content.spotDetailImgVOS
           delete this.scdes.spotDetailImgVOS
+          if(this.scdes.mainUrl == ''){
+            this.scdes.mainUrl = []
+          }
           this.dialogStatus = 'update'
           this.keyword = res.content.address
           let area = []
@@ -457,11 +458,11 @@
           }
           this.dialogFormVisible = true
         })
-        console.log(this.scdes)
       },
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.scdes.spotDetailImgUpdateVOS = this.scdes.spotDetaillImgAddVOS
             updateScenic(this.scdes).then((res) => {
               this.getList()
               this.resetTemp()
@@ -481,12 +482,10 @@
             var mytime = Date.parse(myDate)     //获取当前时间
             SignatureGET(mytime).then(res => {
               this.ossinf = res.content
-              console.log(res)
             }).then(() => {
               this.$refs.bgImgupload.submit()
             }).catch((err) => {
-              console.log(err)
-              this.scdes.mainUrl = ''
+              this.scdes.mainUrl = []
             })
           } else {
             this.ossinf = ''
@@ -503,14 +502,17 @@
       // 选择文件后请求权限并上传
       OnCanChange(file) {
         if (LoginCheck()) {
+          if (this.ossCaninf == '') {
           var myDate = new Date()
           var mytime = Date.parse(myDate)     //获取当前时间
           SignatureGET(mytime).then(res => {
             this.ossCaninf = res.content
-            console.log(res)
           }).then(() => {
             this.$refs.bgImguploadCan.submit()
           })
+          } else {
+            this.ossCaninf = ''
+          }
         }
       },
       uploadCanError() {
@@ -518,7 +520,6 @@
       },
       uploadCanSuccess(res, file) {
         this.scdes.spotDetaillImgAddVOS.push({ 'url': this.serverUrl + this.ossCaninf.key })
-        this.ossCaninf = ''
       }
     }
   }
