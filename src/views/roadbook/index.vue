@@ -3,7 +3,8 @@
     <div class="filter-container">
       <el-input v-model="inf.condition.headline" placeholder="标题搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
       <el-input v-model="inf.condition.daysTrip" placeholder="时长搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
-      <el-cascader style="top: -4px;"
+      <el-cascader v-if="importanceOptions"
+                   style="top: -4px;"
                    @change="handleChange"
                    placeholder="请选择城市"
                    :show-all-levels="false"

@@ -32,19 +32,11 @@ service.interceptors.request.use(
 // response interceptor
 service.interceptors.response.use(
   response => {
-    const res = response.data
-    if (res.code !== 0) {
-      Message({
-        message: res.message || 'error',
-        type: 'error',
-        duration: 5 * 1000
-      })
-      return Promise.reject(res.message || 'error')
-    } else {
+      const res = response.data
+    if (res && res.message === 'success') {
       if (response.config.url === '/admin/v1/login') {
         res.content.token = response.headers['x-auth-token']
       }
-      // console.log(res)
       return res
     }
   },
@@ -54,7 +46,7 @@ service.interceptors.response.use(
       type: 'error',
       duration: 5 * 1000
     })
-    return error
+    return  Promise.reject(error)
   }
 )
 

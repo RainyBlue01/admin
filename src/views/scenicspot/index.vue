@@ -3,7 +3,8 @@
     <div class="filter-container">
       <el-input v-model="inf.condition.search" placeholder="关键字搜索" style="width: 200px;" class="filter-item"
                 @keyup.enter.native="handleFilter"/>
-      <el-cascader style="top: -4px;"
+      <el-cascader v-if="importanceOptions"
+                   style="top: -4px;"
                    @change="handleChange"
                    placeholder="请选择城市"
                    :show-all-levels="false"
@@ -349,6 +350,7 @@
       },
       getArea() {
         getAllArea().then(res => {
+          console.log(res)
           this.importanceOptions = res.content
           let a = {
             'label': '全部',
