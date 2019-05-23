@@ -27,7 +27,7 @@ export function addScenic(data) {
 export function updateScenic(data) {
   return request({
     url: '/spot/update',
-    method: 'post',
+    method: 'put',
     data
   })
 }
