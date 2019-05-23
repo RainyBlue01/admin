@@ -56,7 +56,7 @@
       </el-table-column>
       <el-table-column label="状态" width="110" align="center">
         <template slot-scope="scope">
-          <span >
+          <span>
             {{scope.row.status==1 ? '上架中':'下架中'}}
           </span>
         </template>
@@ -94,7 +94,8 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" @close="resetTemp()">
       <div style="height: 400px;overflow-y: scroll;">
-        <el-form :model="scdes" style="padding:0 20px;" ref="dataForm" :rules="rules" label-position="left" label-width="70px">
+        <el-form :model="scdes" style="padding:0 20px;" ref="dataForm" :rules="rules" label-position="left"
+                 label-width="70px">
           <el-form-item label="景点名称" prop="name">
             <el-input v-model="scdes.name"/>
           </el-form-item>
@@ -106,10 +107,11 @@
                          :options="importanceOptions" v-model="areaId"
             ></el-cascader>
             <el-input v-on:input="inputForMap" v-model="keyword" placeholder="请填写景点地址或名称" style="width: 200px"/>
-            <span  v-if="checkMap" style="margin-left: 10px; font-size: 12px; color: #9da408">请点击地图生成坐标</span>
+            <span v-if="checkMap" style="margin-left: 10px; font-size: 12px; color: #9da408">请点击地图生成坐标</span>
             <baidu-map v-if="checkMap" :scroll-wheel-zoom="true" class="map" :zoom="15" :center="scdes.coordinate">
-              <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="scdes.address" :auto-viewport="true"
-                             v-model="scdes.coordinate"  :panel="false"></bm-local-search>
+              <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="scdes.address"
+                               :auto-viewport="true"
+                               v-model="scdes.coordinate" :panel="false"></bm-local-search>
               <!--<bm-marker  :position="{lng: 116.404, lat: 39.915}" :dragging="true" animation="BMAP_ANIMATION_BOUNCE">-->
               <!--<bm-label content="我爱北京天安门" :labelStyle="{color: 'red', fontSize : '24px'}" :offset="{width: -35, height: 30}"/>-->
               <!--</bm-marker>-->
@@ -155,7 +157,7 @@
               :on-success="uploadCanSuccess"
               :on-error="uploadCanError"
               :on-change="OnCanChange"
-              :limit = '6'
+              :limit='6'
             ><i class="el-icon-plus icon"></i>
             </el-upload>
           </el-form-item>
@@ -184,10 +186,10 @@
 </template>
 
 <script>
-  import { getScenicList, addScenic, updateScenic, delScenic, updateScenicStatus ,getScenicDes} from '@/api/scenicspot'
+  import { getScenicList, addScenic, updateScenic, delScenic, updateScenicStatus, getScenicDes } from '@/api/scenicspot'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
-  import { SignatureGET ,getAllArea} from '@/api/common.js'
+  import { SignatureGET, getAllArea } from '@/api/common.js'
   import { LoginCheck } from '@/utils/loginCheck.js'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
@@ -210,33 +212,33 @@
     },
     data() {
       return {
-        allId:null,
-        area:'',
+        allId: null,
+        area: '',
         tableKey: 0,
-        areaId:[],
+        areaId: [],
         list: false,
         total: 0,
-        keywords:'',
+        keywords: '',
         keyword: '',
         checkMap: false,
         listLoading: true,
         importanceOptions: [],
         scdes: {
-          name:'',
+          name: '',
           fee: 0,
           introduction: '',
           recommendIndex: 0,
-          provinceId:'',
+          provinceId: '',
           address: '',
           cityId: '',
           mainUrl: '',
-          coordinate:'',
-          spotDetaillImgAddVOS:{},
-          tourDuration:'',
+          coordinate: '',
+          spotDetaillImgAddVOS: {},
+          tourDuration: ''
         },
         ossinf: '',
         ossCaninf: '',
-        sele:'',
+        sele: '',
         // serverUrl: 'https://testihospitalapi.ebaiyihui.com/oss/api/file/store/v1/saveFile', // 这里写你要上传的图片服务器地址
         serverUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/', // 这里写你要上传的图片服务器地址
         inf: {
@@ -269,18 +271,18 @@
       this.getArea()
     },
     methods: {
-      upLoadAll(){
+      upLoadAll() {
         let a = []
-        if(this.sele == []){
+        if (this.sele == []) {
           this.$message({
             message: '请选择景点',
             type: 'error'
           })
-        }else{
-          this.sele.map(v=>{
-            a.push({id:v.id,status:v.status == 1 ? 0 : 1 })
+        } else {
+          this.sele.map(v => {
+            a.push({ id: v.id, status: v.status == 1 ? 0 : 1 })
           })
-          updateScenicStatus(a).then(res=>{
+          updateScenicStatus(a).then(res => {
             this.getList()
             this.$message({
               message: '操作成功',
@@ -289,18 +291,18 @@
           })
         }
       },
-      delAll(){
+      delAll() {
         let a = []
-        if(this.sele == []){
+        if (this.sele == []) {
           this.$message({
             message: '请选择景点',
             type: 'error'
           })
-        }else{
-          this.sele.map(v=>{
+        } else {
+          this.sele.map(v => {
             a.push(v.id)
           })
-          delScenic(a).then(res=>{
+          delScenic(a).then(res => {
             this.getList()
             this.$message({
               message: '操作成功',
@@ -309,13 +311,13 @@
           })
         }
       },
-      handStatus(row){
+      handStatus(row) {
         let parmas = [{
-          id:row.id,
-          status:row.status == 1 ? 0 : 1
+          id: row.id,
+          status: row.status == 1 ? 0 : 1
         }]
         console.log(parmas)
-        updateScenicStatus(parmas).then(res=>{
+        updateScenicStatus(parmas).then(res => {
           this.$message({
             message: '操作成功',
             type: 'success'
@@ -323,35 +325,37 @@
           this.getList()
         })
       },
-      inputForMap(){
+      inputForMap() {
         this.scdes.address = this.keyword + this.keywords
       },
-      handleDialogChange(value){
-       let ar = this.$refs['cascaderAddr'].currentLabels
-        this.scdes.cityId=value[1]
-        this.scdes.provinceId=value[0]
-        this.scdes.address = ar[0]+ar[1]
+      handleDialogChange(value) {
+        let ar = this.$refs['cascaderAddr'].currentLabels
+        this.scdes.cityId = value[1]
+        this.scdes.provinceId = value[0]
+        this.scdes.address = ar[0] + ar[1]
         this.checkMap = true
       },
-      handleChange () {
+      handleChange() {
         this.inf.condition.cityId = this.allId[1]
       },
       sendRes(poi) {
         console.log(poi)
-        this.scdes.coordinate =  JSON.stringify(poi.point)
+        this.scdes.coordinate = JSON.stringify(poi.point)
         this.keyword = poi.address
         this.scdes.address = poi.address
       },
       checkMa(pois) {
       },
       select(selection) {
-        this.sele=selection
+        this.sele = selection
       },
-      getArea(){
-        getAllArea().then(res=>{
+      getArea() {
+        getAllArea().then(res => {
           this.importanceOptions = res.content
-          let a = { 'label': '全部',
-            'value': null }
+          let a = {
+            'label': '全部',
+            'value': null
+          }
           this.importanceOptions.push(a)
         })
       },
@@ -372,14 +376,13 @@
       handleModifyStatus(row) {
         let parmas = []
         parmas.push(row.id)
-        delScenic(parmas).then(res=>{
+        delScenic(parmas).then(res => {
           this.getList()
           this.$message({
             message: '操作成功',
             type: 'success'
           })
         })
-
 
       },
       sortChange(data) {
@@ -425,7 +428,7 @@
       createData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            addScenic(this.scdes).then((res)=>{
+            addScenic(this.scdes).then((res) => {
               this.getList()
               this.resetTemp()
               this.$message({
@@ -438,17 +441,17 @@
       },
       //点击编辑触发事件
       handleUpdate(row) {
-        getScenicDes(row.id).then(res=>{
+        getScenicDes(row.id).then(res => {
           this.scdes = res.content
           this.scdes.spotDetaillImgAddVOS = res.content.spotDetailImgVOS
-          delete  this.scdes.spotDetailImgVOS
+          delete this.scdes.spotDetailImgVOS
           this.dialogStatus = 'update'
           this.keyword = res.content.address
           let area = []
           area.push(res.content.provinceId)
           area.push(res.content.cityId)
-          this.areaId=area
-          if(res.content.coordinate){
+          this.areaId = area
+          if (res.content.coordinate) {
             this.scdes.coordinate = eval('(' + res.content.coordinate + ')')
             this.checkMap = true
           }
@@ -459,14 +462,14 @@
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            updateScenic(this.scdes).then((res)=>{
-                this.getList()
+            updateScenic(this.scdes).then((res) => {
+              this.getList()
               this.resetTemp()
               this.$message({
                 message: '操作成功',
                 type: 'success'
               })
-              })
+            })
           }
         })
       },
@@ -481,7 +484,7 @@
               console.log(res)
             }).then(() => {
               this.$refs.bgImgupload.submit()
-            }).catch((err)=>{
+            }).catch((err) => {
               console.log(err)
               this.scdes.mainUrl = ''
             })
@@ -500,21 +503,21 @@
       // 选择文件后请求权限并上传
       OnCanChange(file) {
         if (LoginCheck()) {
-            var myDate = new Date()
-            var mytime = Date.parse(myDate)     //获取当前时间
-            SignatureGET(mytime).then(res => {
-              this.ossCaninf = res.content
-              console.log(res)
-            }).then(() => {
-              this.$refs.bgImguploadCan.submit()
-            })
-          }
+          var myDate = new Date()
+          var mytime = Date.parse(myDate)     //获取当前时间
+          SignatureGET(mytime).then(res => {
+            this.ossCaninf = res.content
+            console.log(res)
+          }).then(() => {
+            this.$refs.bgImguploadCan.submit()
+          })
+        }
       },
       uploadCanError() {
         this.$message.error('图片插入失败')
       },
       uploadCanSuccess(res, file) {
-        this.scdes.spotDetaillImgAddVOS.push({'url' : this.serverUrl + this.ossCaninf.key})
+        this.scdes.spotDetaillImgAddVOS.push({ 'url': this.serverUrl + this.ossCaninf.key })
         this.ossCaninf = ''
       }
     }
@@ -552,8 +555,9 @@
     justify-content: center;
     align-items: center;
   }
-  .el-upload-list__item{
-    width: 185px!important;
-    height: 100px!important;
+
+  .el-upload-list__item {
+    width: 185px !important;
+    height: 100px !important;
   }
 </style>

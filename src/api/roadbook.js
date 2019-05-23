@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getRoadbookList(data) {
   return request({
-    url: '/routes',
+    url: '/roadbook/list',
     method: 'post',
     data
   })
