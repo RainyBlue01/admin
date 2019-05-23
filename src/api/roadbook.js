@@ -24,11 +24,10 @@ export function updateRoadbook(data) {
   })
 }
 
-export function updateStatusRoadbook(data) {
+export function updateStatusRoadbook(id) {
   return request({
     url: '/roadbook/update-status/'+id,
-    method: 'post',
-    data
+    method: 'post'
   })
 }
 
