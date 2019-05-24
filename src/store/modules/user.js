@@ -4,7 +4,7 @@ import { getToken, setToken, removeToken, setUser, removeUser } from '@/utils/au
 import router, { resetRouter } from '@/router'
 
 const state = {
-  token: getToken(),
+  token: '',
   name: '',
   avatar: '',
   introduction: '',

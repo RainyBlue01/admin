@@ -16,7 +16,7 @@
         <el-input
           ref="phone"
           v-model="loginForm.phone"
-          :placeholder="$t('login.phone')"
+          placeholder="电话"
           name="phone"
           type="text"
           auto-complete="on"
@@ -51,8 +51,8 @@
       </el-button>
 
       <div style="position:relative">
-        <div class="tips">
-          <span>{{ $t('login.phone') }} : admin</span>
+        <!--<div class="tips">
+          <span>{{ $t('login.username') }} : admin</span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
         </div>
         <div class="tips">
@@ -60,11 +60,11 @@
             {{ $t('login.phone') }} : editor
           </span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
-        </div>
+        </div>-->
 
-        <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
+        <!-- <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
           {{ $t('login.thirdparty') }}
-        </el-button>
+        </el-button>-->
       </div>
     </el-form>
 
@@ -164,6 +164,7 @@ export default {
     },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
+        console.log(valid)
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)

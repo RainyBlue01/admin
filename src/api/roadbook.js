@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getRoadbookList(data) {
   return request({
-    url: '/routes',
+    url: '/roadbook/list',
     method: 'post',
     data
   })
@@ -26,16 +26,23 @@ export function updateRoadbook(data) {
 
 export function updateStatusRoadbook(data) {
   return request({
-    url: '/roadbook/update-status/'+id,
+    url: '/roadbook/update-status/',
     method: 'post',
     data
   })
 }
 
-export function delRoadBook(id) {
+export function delRoadBook(data) {
   return request({
-    url: '/roadbook/del/'+id,
+    url: '/roadbook/del',
     method: 'delete',
+    data
   })
 }
 
+export function getRoadBookDes(id) {
+  return request({
+    url: 'roadbook/detail/' + id,
+    method: 'get'
+  })
+}

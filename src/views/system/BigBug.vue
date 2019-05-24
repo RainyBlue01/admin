@@ -19,17 +19,17 @@
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="大人物名称"  align="center">
+      <el-table-column label="大人物名称" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="大人物简介"  align="center">
+      <el-table-column label="大人物简介" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column  label="大人物状态" width="110" align="center">
+      <el-table-column label="大人物状态" width="110" align="center">
         <template slot-scope="scope">
           <span style="color:red;">{{ scope.row.reviewer }}</span>
         </template>
@@ -37,31 +37,33 @@
       <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
-           置顶
+            置顶
           </el-button>
-          <el-button  size="mini" type="danger" @click="handleModifyStatus(row,'deleted')">
+          <el-button size="mini" type="danger" @click="handleModifyStatus(row,'deleted')">
             取消置顶
           </el-button>
         </template>
       </el-table-column>
     </el-table>
     <div class="next-footer">
-      <el-button class="foot-upload" size="medium" type="primary" >取消置顶</el-button>
+      <el-button class="foot-upload" size="medium" type="primary">取消置顶</el-button>
     </div>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit"
+                @pagination="getList"/>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" >
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px">
         <el-form-item label="景点名称">
-          <el-input v-model="temp.title" />
+          <el-input v-model="temp.title"/>
         </el-form-item>
         <el-form-item label="地理位置">
           <el-select v-model="temp.status" style="width: 164px" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
+            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item"/>
           </el-select>
           <el-input v-model="keyword" style="width: 162px"/>
-          <baidu-map  :scroll-wheel-zoom="true"  class="map"  :zoom="15">
-            <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="keyword" :auto-viewport="true" :panel="false"></bm-local-search>
+          <baidu-map :scroll-wheel-zoom="true" class="map" :zoom="15">
+            <bm-local-search @infohtmlset="sendRes" @markersset="checkMa" :keyword="keyword" :auto-viewport="true"
+                             :panel="false"></bm-local-search>
             <!--<bm-marker  :position="{lng: 116.404, lat: 39.915}" :dragging="true" animation="BMAP_ANIMATION_BOUNCE">-->
             <!--<bm-label content="我爱北京天安门" :labelStyle="{color: 'red', fontSize : '24px'}" :offset="{width: -35, height: 30}"/>-->
             <!--</bm-marker>-->
@@ -70,18 +72,19 @@
           </el-col>
         </el-form-item>
         <el-form-item label="推荐指数">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="10" style="margin-top:8px;" />
+          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="10"
+                   style="margin-top:8px;"/>
         </el-form-item>
         <el-form-item label="收费情况">
           <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
+            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item"/>
           </el-select>
         </el-form-item>
         <el-form-item label="景点描述">
-          <el-input type="textarea" />
+          <el-input type="textarea"/>
         </el-form-item>
         <el-form-item label="封面图片">
-          <Upload v-model="postForm.image_uri" />
+          <Upload v-model="postForm.image_uri"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -96,8 +99,8 @@
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
+        <el-table-column prop="key" label="Channel"/>
+        <el-table-column prop="pv" label="Pv"/>
       </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
@@ -107,7 +110,7 @@
 </template>
 
 <script>
-  import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+  import { getBigList, cancelTop, setBigUser, setTop } from '@/api/biguser'
   import Upload from '@/components/Upload/SingleImage'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
@@ -128,7 +131,7 @@
 
   export default {
     name: 'ComplexTable',
-    components: { Pagination , Upload},
+    components: { Pagination, Upload },
     directives: { waves },
     filters: {
       statusFilter(status) {
@@ -148,7 +151,7 @@
         tableKey: 0,
         list: null,
         total: 0,
-        keyword:'',
+        keyword: '',
         listLoading: true,
         listQuery: {
           page: 1,
@@ -158,7 +161,7 @@
           type: undefined,
           sort: '+id'
         },
-        postForm:{image_uri:''},
+        postForm: { image_uri: '' },
         importanceOptions: [1, 2, 3],
         calendarTypeOptions,
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -193,25 +196,26 @@
       this.getList()
     },
     methods: {
-      sendRes(poi){
+      sendRes(poi) {
         console.log(poi)
       },
-      checkMa(pois){
+      checkMa(pois) {
         console.log(pois)
       },
-      select(selection){
+      select(selection) {
         console.log(selection)
       },
       getList() {
         this.listLoading = true
-        fetchList(this.listQuery).then(response => {
-          this.list = response.data.items
-          this.total = response.data.total
-
-          // Just to simulate the time of the request
-          setTimeout(() => {
-            this.listLoading = false
-          }, 1.5 * 1000)
+        getBigList(this.inf).then(res => {
+          // console.log(res)
+          this.list = res.content
+          // this.total = res.total
+          this.listLoading = false
+        }).catch(err => {
+          this.list = false
+          console.log(err)
+          this.listLoading = false
         })
       },
       handleFilter() {
@@ -358,13 +362,16 @@
     height: 400px;
     margin-top: 10px;
   }
-  .ml{
+
+  .ml {
     margin-left: 10px;
   }
-  .fr{
+
+  .fr {
     float: right;
   }
-  .next-footer{
+
+  .next-footer {
     margin: 20px 20px;
   }
 </style>

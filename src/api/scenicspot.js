@@ -2,9 +2,17 @@ import request from '@/utils/request'
 
 export function getScenicList(data) {
   return request({
-    url: '/routes',
+    url: '/spot/query',
     method: 'post',
     data
+  })
+}
+
+
+export function getScenicDes(id) {
+  return request({
+    url: '/spot/'+ id,
+    method: 'get',
   })
 }
 
@@ -19,12 +27,12 @@ export function addScenic(data) {
 export function updateScenic(data) {
   return request({
     url: '/spot/update',
-    method: 'post',
+    method: 'put',
     data
   })
 }
 
-export function updateScenic(data) {
+export function updateScenicStatus(data) {
   return request({
     url: '/spot/updateStatus',
     method: 'put',
@@ -32,10 +40,11 @@ export function updateScenic(data) {
   })
 }
 
-export function delScenic(id) {
+export function delScenic(data) {
   return request({
-    url: '/spot/'+id,
+    url: '/spot/delete',
     method: 'delete',
+    data
   })
 }
 
