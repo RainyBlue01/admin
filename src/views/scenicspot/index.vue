@@ -350,7 +350,6 @@
       },
       getArea() {
         getAllArea().then(res => {
-          console.log(res)
           this.importanceOptions = res.content
           let a = {
             'label': '全部',

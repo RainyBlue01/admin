@@ -24,17 +24,25 @@ export function updateRoadbook(data) {
   })
 }
 
-export function updateStatusRoadbook(id) {
+export function updateStatusRoadbook(data) {
   return request({
-    url: '/roadbook/update-status/'+id,
-    method: 'post'
+    url: '/roadbook/update-status/',
+    method: 'post',
+    data
   })
 }
 
-export function delRoadBook(id) {
+export function delRoadBook(data) {
   return request({
-    url: '/roadbook/del/'+id,
+    url: '/roadbook/del',
     method: 'delete',
+    data
   })
 }
 
+export function getRoadBookDes(id) {
+  return request({
+    url: 'roadbook/detail/' + id,
+    method: 'get'
+  })
+}

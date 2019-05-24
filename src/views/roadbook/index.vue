@@ -176,7 +176,7 @@
 </template>
 
 <script>
-  import { getRoadbookList, saveRoadbook, updateRoadbook, updateStatusRoadbook, delRoadBook } from '@/api/roadbook'
+  import { getRoadbookList, saveRoadbook, updateRoadbook, updateStatusRoadbook, delRoadBook ,getRoadBookDes} from '@/api/roadbook'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import { SignatureGET, getAllArea } from '@/api/common.js'
@@ -280,14 +280,14 @@
         let a = []
         if (this.sele == []) {
           this.$message({
-            message: '请选择景点',
+            message: '请选择路书',
             type: 'error'
           })
         } else {
           this.sele.map(v => {
-            a.push({ id: v.id, status: v.status == 1 ? 0 : 1 })
+            a.push({ id: v.id, publishStatus: v.publishStatus == 1 ? 0 : 1 })
           })
-          updateScenicStatus(a).then(res => {
+          updateStatusRoadbook(a).then(res => {
             this.getList()
             this.$message({
               message: '操作成功',
@@ -429,7 +429,7 @@
       createData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            addScenic(this.scdes).then((res) => {
+            saveRoadbook(this.scdes).then((res) => {
               this.getList()
               this.resetTemp()
               this.$message({
