@@ -400,6 +400,8 @@ export default {
       } else {
         if (val) {
           this.form = val.row
+        } else {
+          this.form = []
         }
         this.DialogTitle = model
         this.dialogFormVisible = true
