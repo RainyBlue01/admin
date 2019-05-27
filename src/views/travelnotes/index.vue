@@ -25,7 +25,6 @@
     </div>
     <el-table
       :data="list.records"
-      border
       fit
       style="width: 100%;"
       @selection-change="SelectionChange"
