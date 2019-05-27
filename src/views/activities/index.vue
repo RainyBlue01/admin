@@ -401,7 +401,7 @@ export default {
         if (val) {
           this.form = val.row
         } else {
-          this.form = []
+          this.form = null
         }
         this.DialogTitle = model
         this.dialogFormVisible = true
