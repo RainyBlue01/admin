@@ -19,7 +19,7 @@ service.interceptors.request.use(
       // console.log(store.getters.token)
       config.headers['X-Auth-Token'] = store.getters.token
     } else {
-      config.headers['X-Auth-Token'] = JSON.parse(getToken())
+      config.headers['X-Auth-Token'] = getToken()
     }
     return config
   },

@@ -6,21 +6,15 @@
         placeholder="活动名称"
         style="width: 300px;"
         class="filter-item"
-        @keyup.enter.native="Click(1)"
+        @keyup.enter.native="Init"
       />
-      <el-button
-        v-waves
-        class="filter-item"
-        type="primary"
-        icon="el-icon-search"
-        @click="Click(1)"
-      >搜索</el-button>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="Init">搜索</el-button>
       <el-button
         class="filter-item"
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
-        @click="Click(2)"
+        @click="ClickEdit(1)"
       >添加</el-button>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-download">导出</el-button>
     </div>
@@ -58,8 +52,8 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="250">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini">编辑</el-button>
-          <el-button type="danger" size="mini" @click="Click(0,scope)">删除</el-button>
+          <el-button type="primary" size="mini" @click="ClickEdit(2,scope)">编辑</el-button>
+          <el-button type="danger" size="mini" @click="ClickEdit(0,scope)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -67,11 +61,11 @@
       <transition name="el-zoom-in-top">
         <template v-if="editVisible">
           <el-col :span="12">
-            <el-button type="danger" size="mini" @click="Click(0,scope)">删除</el-button>
-            <el-button type="warning" size="mini" @click="Click(3,0)">未发布</el-button>
-            <el-button type="success" size="mini" @click="Click(3,1)">已发布</el-button>
-            <el-button type="danger" size="mini" @click="Click(3,2)">进行中</el-button>
-            <el-button type="info" size="mini" @click="Click(3,3)">已结束</el-button>
+            <el-button type="danger" size="mini" @click="ClickBatch(9)">删除</el-button>
+            <el-button type="warning" size="mini" @click="ClickBatch(0)">未发布</el-button>
+            <el-button type="success" size="mini" @click="ClickBatch(1)">已发布</el-button>
+            <el-button type="danger" size="mini" @click="ClickBatch(2)">进行中</el-button>
+            <el-button type="info" size="mini" @click="ClickBatch(3)">已结束</el-button>
           </el-col>
         </template>
       </transition>
@@ -87,36 +81,198 @@
         />
       </el-col>
     </el-row>
-    <el-dialog title="编辑活动" :visible.sync="dialogFormVisible">
-      <el-form :model="form">
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="活动名称" label-width="100px">
-              <el-input v-model="form.name" autocomplete="off" width="200px;" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="活动路书" label-width="100px">
-              <!-- <el-select v-model="form.region" placeholder="请选择活动路书">
-                <el-option label="路书一" value="shanghai" />
-                <el-option label="路书二" value="beijing" />
-              </el-select>-->
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
+    <el-dialog :title="DialogTitle===1? '添加活动':'编辑活动'" :visible.sync="dialogFormVisible">
+      <el-tabs tab-position="left" style="height: 400px;">
+        <el-tab-pane label="基本设置">
+          <el-form :model="form">
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="活动名称" label-width="100px" prop="headline">
+                  <el-input v-model="form.headline" autocomplete="off" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="活动路书" label-width="100px" prop="roadBookId">
+                  <el-select v-model="form.roadBookId" placeholder="请选择活动路书" filterable>
+                    <el-option label="路书一" value="1" />
+                    <el-option label="路书二" value="2" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="推荐指数" label-width="100px" prop="recommendationRate">
+                  <div style="padding:8px 0;">
+                    <el-rate
+                      v-model="form.recommendationRate"
+                      show-score
+                      :max="10"
+                      text-color="#ff9900"
+                      score-template="{value}"
+                    />
+                  </div>
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="活动天数" label-width="100px" prop="daysTrip">
+                  <el-select v-model="form.daysTrip" placeholder="请选择活动天数">
+                    <el-option label="1天" value="1" />
+                    <el-option label="3天" value="3" />
+                    <el-option label="7天" value="7" />
+                    <el-option label="15天" value="15" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="单人价格" label-width="100px" prop="price">
+                  <el-select v-model="form.price" placeholder="请选择活动路书">
+                    <el-option label="500" value="500" />
+                    <el-option label="800" value="800" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="活动里程" label-width="100px" prop="travelMileage">
+                  <el-select v-model="form.travelMileage" placeholder="请选择活动路书">
+                    <el-option label="5" value="5" />
+                    <el-option label="10" value="10" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="报名截止" label-width="100px" prop="deadlineDt">
+                  <el-date-picker
+                    v-model="form.deadlineDt"
+                    type="datetime"
+                    placeholder="选择日期时间"
+                    style="width:200px"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="出发时间" label-width="100px" prop="departureDt">
+                  <el-date-picker
+                    v-model="form.departureDt"
+                    type="datetime"
+                    placeholder="选择日期时间"
+                    style="width:200px"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="活动城市" label-width="100px" prop="areaCode">
+                  <el-select v-model="form.areaCode" placeholder="请选择活动路书">
+                    <el-option label="成都" value="2525" />
+                    <el-option label="重庆" value="68682" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="发布者" label-width="100px" prop="deadlineDt">
+                  <el-select v-model="form.price" placeholder="请选择活动路书">
+                    <el-option label="500" value="500" />
+                    <el-option label="800" value="800" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <el-row>
+              <el-col :span="21">
+                <el-form-item label="详细地址" label-width="100px" prop="destination">
+                  <el-input
+                    v-model="form.destination"
+                    type="textarea"
+                    placeholder="请输入内容"
+                    :rows="4"
+                    maxlength="50"
+                    show-word-limit
+                    resize="none"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-tab-pane>
+        <el-tab-pane label="行程安排">行程安排</el-tab-pane>
+        <el-tab-pane label="其他设置">
+          <el-form>
+            <el-row>
+              <el-col :span="20">
+                <el-form-item label="背景图片" label-width="100px">
+                  <div class="img">
+                    <img :src="form.imageUrl" alt>
+                    <el-upload
+                      ref="imageUpload"
+                      class="upload-demo"
+                      drag
+                      :action="ossUrl"
+                      :data="ossData"
+                      :on-success="OnSuccess"
+                      :on-change="OnChange"
+                      :auto-upload="false"
+                      :limit="1"
+                      :show-file-list="false"
+                    >
+                      <i class="el-icon-upload" />
+                      <i v-if="form.imageUrl" class="el-icon-delete" @click.stop="test" />
+                    </el-upload>
+                  </div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="20">
+                <el-form-item label="活动描述" label-width="100px">
+                  <el-input
+                    v-model="form.description"
+                    type="textarea"
+                    placeholder="请输入内容"
+                    :rows="4"
+                    maxlength="500"
+                    show-word-limit
+                    resize="none"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="20">
+                <el-form-item label="其他备注" label-width="100px">
+                  <el-input
+                    v-model="form.otherDescription"
+                    type="textarea"
+                    placeholder="请输入内容"
+                    :rows="2"
+                    maxlength="500"
+                    show-word-limit
+                    resize="none"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button type="info" @click="ClickRelease(0)">草稿箱</el-button>
+        <el-button type="primary" @click="ClickRelease(1)">发布</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { ActivtiesGet, ActiveDel, ActivePublish } from '@/api/activities'
+import { ActivtiesGet, ActiveDel, ActivePublish, ActiveAdd } from '@/api/activities'
+import { SignatureGET } from '@/api/common'
 import waves from '@/directive/waves' // waves directive
 
 export default {
@@ -140,8 +296,15 @@ export default {
   },
   data() {
     return {
+      value: 10,
+      value1: 10,
+      ossData: null,
+      ossUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/',
+      dialogImageUrl: '',
+      dialogVisible: false,
       dialogFormVisible: false,
       editVisible: false,
+      DialogTitle: null,
       selectionChange: {},
       form: {
         name: '',
@@ -189,38 +352,31 @@ export default {
     this.Init()
   },
   methods: {
+    test() {
+      this.form.imageUrl = null
+      console.log('sss')
+    },
+    // 初始化页面数据
     Init() {
       ActivtiesGet(this.inf).then(res => {
         this.list = res.content
-        console.log(res)
+        // console.log(res)
       })
     },
+    // 多少条
     handleSizeChange(val) {
       this.inf.current = 1
       this.inf.size = val
       // console.log(`每页 ${val} 条`)
       this.Init()
     },
+    // 第几页
     handleCurrentChange(val) {
       this.inf.current = val
       // console.log(`当前页: ${val}`)
       this.Init()
     },
-    handleModifyStatus(row, status) {
-      this.$message({
-        message: '操作成功',
-        type: 'success'
-      })
-      row.status = status
-    },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-        }
-      })
-    },
+    // 多选操作
     SelectionChange(val) {
       if (val.length === 0) {
         this.editVisible = false
@@ -229,63 +385,93 @@ export default {
       }
       this.selectionChange = val
     },
-    Click(model, val) {
-      switch (model) {
-        case 0: // 删除按钮
-          this.$confirm('此操作将永久删除该活动, 是否继续?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            ActiveDel([val.row.id]).then(res => {
-              this.list.records.splice(val.$index, 1)
-              this.$message({
-                message: '删除成功!',
-                type: 'success'
-              })
-            })
-          }).catch(() => {
-            this.$message({
-              type: 'info',
-              message: '已取消删除'
-            })
+    // 添加/编辑/删除 按钮
+    ClickEdit(model, val) {
+      // console.log(model)
+      if (model === 0) {
+        // 删除操作
+        ActiveDel([val.row.id]).then(res => {
+          this.list.records.splice(val.$index, 1)
+          this.$message({
+            message: '删除成功!',
+            type: 'success'
           })
-          break
-        case 1: // 搜索按钮
-          return this.Init()
-        case 2: // 添加活动
-          this.dialogFormVisible = true
-          break
-        case 3: // 批量修改状态
-          this.$confirm('确定批量修改吗?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            this.inf2.activityIds = []
-            this.selectionChange.forEach(element => {
-              this.inf2.activityIds.push(element.id)
-            })
-            this.inf2.status = val
-            console.log(this.inf2)
-            ActivePublish(this.inf2).then(res => {
-              this.Init()
-              this.$message({
-                message: '修改成功!',
-                type: 'success'
-              })
-            })
-          }).catch(() => {
-            this.$message({
-              type: 'info',
-              message: '已取消'
-            })
-          })
-
-          break
-        default:
-          console.log('错误点击事件model:' + model)
+        })
+      } else {
+        if (val) {
+          this.form = val.row
+        }
+        this.DialogTitle = model
+        this.dialogFormVisible = true
       }
+    },
+    // 批量操作
+    ClickBatch(val) {
+      this.inf2.activityIds = []
+      this.selectionChange.forEach(element => {
+        this.inf2.activityIds.push(element.id)
+      })
+      this.inf2.status = val
+      // 删除/批量删除
+      this.$confirm('确定批量操作吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (val === 9) {
+          // 删除操作
+          ActiveDel(this.inf2.activityIds).then(res => {
+            this.$message({
+              message: '删除成功!',
+              type: 'success'
+            })
+          })
+        } else {
+          // 批量修改状态
+          ActivePublish(this.inf2).then(res => {
+            this.Init()
+            this.$message({
+              message: '修改成功!',
+              type: 'success'
+            })
+          })
+        }
+        this.Init()
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        })
+      })
+    },
+    // 选择图片
+    OnChange(file) {
+      console.log(file)
+      if (this.ossData === null) {
+        SignatureGET(file.name).then(res => {
+          console.log(res)
+          this.ossData = res.content // 拿到上传证书
+        }).then(() => {
+          this.$refs.imageUpload.submit() // 执行上传
+        })
+      } else {
+        this.ossData = null
+      }
+    },
+    // 图片上传成功
+    OnSuccess() {
+      this.form.imageUrl = this.ossUrl + this.ossData.key
+    },
+    ClickRelease(status) {
+      this.form.publishStatus = status
+      ActiveAdd(this.form).then(res => {
+        console.log(res)
+        this.$message({
+          message: '操作成功!',
+          type: 'success'
+        })
+        this.Init()
+      })
     }
   }
 }

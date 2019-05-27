@@ -31,6 +31,14 @@ export function ActivePublish(inf) {
     data: inf
   })
 }
+// 活动状态修改
+export function ActiveAdd(inf) {
+  return request({
+    method: 'post',
+    url: 'active/add',
+    data: inf
+  })
+}
 // 活动详情查询
 export function ActivtiesDetailsGet(id) {
   return request({
