@@ -26,15 +26,15 @@ export function updateRoadbook(data) {
 
 export function updateStatusRoadbook(data) {
   return request({
-    url: '/roadbook/update-status/',
-    method: 'post',
+    url: '/roadbook/update-status',
+    method: 'put',
     data
   })
 }
 
 export function delRoadBook(data) {
   return request({
-    url: '/roadbook/del',
+    url: '/roadbook/delete',
     method: 'delete',
     data
   })

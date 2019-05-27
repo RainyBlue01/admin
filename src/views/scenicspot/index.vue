@@ -239,7 +239,7 @@
         },
         ossinf: '',
         ossCaninf: '',
-        sele: '',
+        sele: [],
         // serverUrl: 'https://testihospitalapi.ebaiyihui.com/oss/api/file/store/v1/saveFile', // 这里写你要上传的图片服务器地址
         serverUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/', // 这里写你要上传的图片服务器地址
         inf: {
@@ -304,6 +304,7 @@
             a.push(v.id)
           })
           delScenic(a).then(res => {
+            this.inf.current = 1
             this.getList()
             this.$message({
               message: '操作成功',
@@ -444,7 +445,7 @@
           this.scdes = res.content
           this.scdes.spotDetaillImgAddVOS = res.content.spotDetailImgVOS
           delete this.scdes.spotDetailImgVOS
-          if(this.scdes.mainUrl == ''){
+          if (res.content.mainUrl == null) {
             this.scdes.mainUrl = []
           }
           this.dialogStatus = 'update'
@@ -504,13 +505,13 @@
       OnCanChange(file) {
         if (LoginCheck()) {
           if (this.ossCaninf == '') {
-          var myDate = new Date()
-          var mytime = Date.parse(myDate)     //获取当前时间
-          SignatureGET(mytime).then(res => {
-            this.ossCaninf = res.content
-          }).then(() => {
-            this.$refs.bgImguploadCan.submit()
-          })
+            var myDate = new Date()
+            var mytime = Date.parse(myDate)     //获取当前时间
+            SignatureGET(mytime).then(res => {
+              this.ossCaninf = res.content
+            }).then(() => {
+              this.$refs.bgImguploadCan.submit()
+            })
           } else {
             this.ossCaninf = ''
           }

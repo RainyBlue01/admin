@@ -1,8 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="inf.condition.headline" placeholder="标题搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
-      <el-input v-model="inf.condition.daysTrip" placeholder="时长搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
+      <el-input v-model="inf.condition.headline" placeholder="标题搜索" style="width: 200px;" class="filter-item"
+                @keyup.enter.native="handleFilter"/>
+      <el-input v-model="inf.condition.daysTrip" placeholder="时长搜索" style="width: 200px;" class="filter-item"
+                @keyup.enter.native="handleFilter"/>
       <el-cascader v-if="importanceOptions"
                    style="top: -4px;"
                    @change="handleChange"
@@ -77,7 +79,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             {{ $t('table.edit') }}
           </el-button>
-          <el-button v-if="row.status == 0" type="success" size="mini" @click="handStatus(row)">上架</el-button>
+          <el-button v-if="row.publishStatus == 0" type="success" size="mini" @click="handStatus(row)">上架</el-button>
           <el-button v-else type="primary" size="mini" @click="handStatus(row)">下架</el-button>
           <el-button size="mini" type="danger" @click="handleModifyStatus(row)">
             {{ $t('table.delete') }}
@@ -97,7 +99,7 @@
         <el-form :model="scdes" style="padding:0 20px;" ref="dataForm" :rules="rules" label-position="left"
                  label-width="90px">
           <el-form-item label="路书标题" prop="name">
-            <el-input v-model="scdes.name"/>
+            <el-input v-model="scdes.headline"/>
           </el-form-item>
           <el-form-item label="目的地位置" prop="areaId">
             <el-cascader ref="cascaderAddr"
@@ -109,13 +111,13 @@
             <el-input v-on:input="inputForMap" v-model="keyword" placeholder="请填写目的地址或名称" style="width: 200px"/>
           </el-form-item>
           <el-form-item label="推荐指数" prop="recommendIndex">
-            <el-rate style="margin-top: 10px" v-model="scdes.recommendIndex" allow-half show-score :max="10"/>
+            <el-rate style="margin-top: 10px" v-model="scdes.recommendationRate" allow-half show-score :max="10"/>
           </el-form-item>
           <el-form-item label="行程天数" prop="tourDuration">
             <el-input v-model="scdes.tourDuration"/>
           </el-form-item>
           <el-form-item label="路书描述" prop="introduction">
-            <el-input type="textarea" v-model="scdes.introduction"/>
+            <el-input type="textarea" v-model="scdes.description"/>
           </el-form-item>
           <el-form-item label="其他描述" prop="fee">
             <el-input type="textarea" v-model="scdes.otherDescription"/>
@@ -176,7 +178,14 @@
 </template>
 
 <script>
-  import { getRoadbookList, saveRoadbook, updateRoadbook, updateStatusRoadbook, delRoadBook ,getRoadBookDes} from '@/api/roadbook'
+  import {
+    getRoadbookList,
+    saveRoadbook,
+    updateRoadbook,
+    updateStatusRoadbook,
+    delRoadBook,
+    getRoadBookDes
+  } from '@/api/roadbook'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import { SignatureGET, getAllArea } from '@/api/common.js'
@@ -212,44 +221,44 @@
         listLoading: true,
         importanceOptions: [],
         scdes: {
-          "areaCode": "",
-          "daysTrip": 0,
-          "description": "",
-          "destination": "",
-          "headline": "",
-          "id": 0,
-          "otherDescription": "",
-          "publishStatus": 0,
-          "recommendationRate": 0,
-          "mainUrl":[],
-          "spotDetaillImgAddVOS":[],
-          "saveVos": [
+          'areaCode': '',
+          'daysTrip': 0,
+          'description': '',
+          'destination': '',
+          'headline': '',
+          'id': 0,
+          'otherDescription': '',
+          'publishStatus': 0,
+          'recommendationRate': 0,
+          'mainUrl': [],
+          'spotDetaillImgAddVOS': [],
+          'saveVos': [
             {
-              "areaCode": "",
-              "daysNumber": 0,
-              "description": "",
-              "id": 0,
-              "latitude": 0,
-              "longitude": 0,
-              "roadBookId": 0,
-              "travelEnd": "",
-              "travelMileage": 0,
-              "travelStart": ""
+              'areaCode': '',
+              'daysNumber': 0,
+              'description': '',
+              'id': 0,
+              'latitude': 0,
+              'longitude': 0,
+              'roadBookId': 0,
+              'travelEnd': '',
+              'travelMileage': 0,
+              'travelStart': ''
             }
           ],
-          "travelMileage": 0
+          'travelMileage': 0
         },
         ossinf: '',
         ossCaninf: '',
-        sele: '',
+        sele: [],
         // serverUrl: 'https://testihospitalapi.ebaiyihui.com/oss/api/file/store/v1/saveFile', // 这里写你要上传的图片服务器地址
         serverUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/', // 这里写你要上传的图片服务器地址
         inf: {
-          "condition": {
-            "daysTrip": null,
-            "destination": null,
-            "headline": null,
-            "travelMileageType": null
+          'condition': {
+            'daysTrip': null,
+            'destination': null,
+            'headline': null,
+            'travelMileageType': null
           },
           'current': 1,
           'size': 10
@@ -268,6 +277,7 @@
         dialogPvVisible: false,
         pvData: [],
         rules: {},
+        arr:'',
         downloadLoading: false
       }
     },
@@ -307,7 +317,8 @@
           this.sele.map(v => {
             a.push(v.id)
           })
-          delScenic(a).then(res => {
+          delRoadBook(a).then(res => {
+            this.inf.current = 1
             this.getList()
             this.$message({
               message: '操作成功',
@@ -319,10 +330,10 @@
       handStatus(row) {
         let parmas = [{
           id: row.id,
-          status: row.status == 1 ? 0 : 1
+          publishStatus: row.publishStatus == 1 ? 0 : 1
         }]
         console.log(parmas)
-        updateScenicStatus(parmas).then(res => {
+        updateStatusRoadbook(parmas).then(res => {
           this.$message({
             message: '操作成功',
             type: 'success'
@@ -331,11 +342,14 @@
         })
       },
       inputForMap() {
-        this.scdes.destination = this.keyword
+        console.log(this.arr)
+        this.scdes.destination =this.arr[0]+this.arr[1]+this.keyword
       },
       handleDialogChange(value) {
         let ar = this.$refs['cascaderAddr'].currentLabels
+        this.arr = ar
         this.scdes.areaCode = value[1]
+        this.scdes.provinceId = value[0]
       },
       handleChange() {
         this.inf.condition.destination = this.allId[1]
@@ -430,11 +444,23 @@
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             saveRoadbook(this.scdes).then((res) => {
-              this.getList()
-              this.resetTemp()
+              if(res){
+                this.getList()
+                this.resetTemp()
+                this.$message({
+                  message: '操作成功',
+                  type: 'success'
+                })
+              }else{
+                this.$message({
+                  message: '操作失败',
+                  type: 'error'
+                })
+              }
+            }).catch(err=>{
               this.$message({
-                message: '操作成功',
-                type: 'success'
+                message: '操作失败',
+                type: 'error'
               })
             })
           }
@@ -442,7 +468,7 @@
       },
       //点击编辑触发事件
       handleUpdate(row) {
-        getScenicDes(row.id).then(res => {
+        getRoadBookDes(row.id).then(res => {
           this.scdes = res.content
           this.scdes.spotDetaillImgAddVOS = res.content.spotDetailImgVOS
           delete this.scdes.spotDetailImgVOS
@@ -459,13 +485,21 @@
       updateData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
-            updateScenic(this.scdes).then((res) => {
-              this.getList()
-              this.resetTemp()
-              this.$message({
-                message: '操作成功',
-                type: 'success'
-              })
+            updateRoadbook(this.scdes).then((res) => {
+              console.log(res)
+              if(res.success == true){
+                this.getList()
+                this.resetTemp()
+                this.$message({
+                  message: '操作成功',
+                  type: 'success'
+                })
+              }else{
+                this.$message({
+                  message: '操作失败',
+                  type: 'success'
+                })
+              }
             })
           }
         })
@@ -478,11 +512,9 @@
             var mytime = Date.parse(myDate)     //获取当前时间
             SignatureGET(mytime).then(res => {
               this.ossinf = res.content
-              console.log(res)
             }).then(() => {
               this.$refs.bgImgupload.submit()
             }).catch((err) => {
-              console.log(err)
               this.scdes.mainUrl = []
             })
           } else {
@@ -500,14 +532,17 @@
       // 选择文件后请求权限并上传
       OnCanChange(file) {
         if (LoginCheck()) {
-          var myDate = new Date()
-          var mytime = Date.parse(myDate)     //获取当前时间
-          SignatureGET(mytime).then(res => {
-            this.ossCaninf = res.content
-            console.log(res)
-          }).then(() => {
-            this.$refs.bgImguploadCan.submit()
-          })
+          if (this.ossCaninf == '') {
+            var myDate = new Date()
+            var mytime = Date.parse(myDate)     //获取当前时间
+            SignatureGET(mytime).then(res => {
+              this.ossCaninf = res.content
+            }).then(() => {
+              this.$refs.bgImguploadCan.submit()
+            })
+          } else {
+            this.ossCaninf = ''
+          }
         }
       },
       uploadCanError() {
