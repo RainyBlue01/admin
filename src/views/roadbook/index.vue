@@ -1,560 +1,489 @@
 <template>
-  <div class="app-container">
+  <div id="roadbook">
     <div class="filter-container">
-      <el-input v-model="inf.condition.headline" placeholder="标题搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
-      <el-input v-model="inf.condition.daysTrip" placeholder="时长搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter"/>
-      <el-cascader v-if="importanceOptions"
-                   style="top: -4px;"
-                   @change="handleChange"
-                   placeholder="请选择城市"
-                   :show-all-levels="false"
-                   filterable
-                   :options="importanceOptions" v-model="allId"></el-cascader>
-      <el-button v-waves class="filter-item ml" type="primary" icon="el-icon-search" @click="handleFilter">
-        搜索
-      </el-button>
-      <el-button class="filter-item fr" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
-                 @click="handleCreate">
-        添加路书
-      </el-button>
+      <el-input
+        v-model="inf.areaCodeEq"
+        placeholder="活动名称"
+        style="width: 300px;"
+        class="filter-item"
+        @keyup.enter.native="Init"
+      />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="Init">搜索</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="ClickEdit(1)"
+      >添加</el-button>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-download">导出</el-button>
     </div>
-
-    <el-table
-      v-if="list"
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      fit
-      highlight-current-row
-      @sort-change="sortChange"
-      @selection-change="select"
-    >
-      <el-table-column
-        type="selection"
-        width="55">
+    <el-table :data="list.records" fit style="width: 100%;" @selection-change="SelectionChange">
+      <el-table-column type="selection" align="center" width="50px" />
+      <el-table-column label="ID" prop="id" align="center" width="100px" sortable />
+      <el-table-column label="价格" prop="price" min-width="50px" align="center" sortable />
+      <el-table-column label="活动名称" prop="headline" min-width="200px" align="center" />
+      <el-table-column label="发布时间" width="300px" prop="entryDt" align="center" sortable>
+        <template slot-scope="scope">{{ scope.row.entryDt }}</template>
       </el-table-column>
-      <el-table-column label="路书id" prop="id" sortable="custom" align="center" width="160">
+      <el-table-column label="发布人" width="150px" prop="publisherName" align="center" sortable>
+        <template slot-scope="scope">{{ scope.row.publisherName }}</template>
+      </el-table-column>
+      <el-table-column label="状态" class-name="status-col" prop="publishStatus" width="150" sortable>
         <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
+          <el-tag
+            v-if="scope.row.publishStatus===0"
+            type="warning"
+          >{{ scope.row.publishStatus | publishStatusFormat }}</el-tag>
+          <el-tag
+            v-else-if="scope.row.publishStatus===1"
+            type="success"
+          >{{ scope.row.publishStatus | publishStatusFormat }}</el-tag>
+          <el-tag
+            v-else-if="scope.row.publishStatus===2"
+            type="danger"
+          >{{ scope.row.publishStatus | publishStatusFormat }}</el-tag>
+          <el-tag
+            v-else-if="scope.row.publishStatus===3"
+            type="info"
+          >{{ scope.row.publishStatus | publishStatusFormat }}</el-tag>
+          <el-tag v-else>{{ scope.row.publishStatus |publishStatusFormat }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="路书名称" align="center">
+      <el-table-column label="操作" align="center" width="250">
         <template slot-scope="scope">
-          <span>{{ scope.row.headline  }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="路书描述" align="center" width="200">
-        <template slot-scope="scope">
-          <span
-            style="overflow : hidden;text-overflow: ellipsis; display: -webkit-box;-webkit-line-clamp: 2; -webkit-box-orient: vertical">{{ scope.row.description  }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="行程天数" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.daysTrip }}天</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="行程历程" width="110" align="center">
-        <template slot-scope="scope">
-          <span>
-            {{scope.row.travelMileage}}km
-          </span>
-        </template>
-      </el-table-column>
-      <!--<el-table-column label="推荐指数" width="280px">
-        <template slot-scope="scope">
-          <el-rate
-            style="display: inline-block"
-            :max="10"
-            disabled
-            show-score
-            v-model="scope.row.recommendIndex"
-          ></el-rate>
-        </template>
-      </el-table-column>-->
-      <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            {{ $t('table.edit') }}
-          </el-button>
-          <el-button v-if="row.status == 0" type="success" size="mini" @click="handStatus(row)">上架</el-button>
-          <el-button v-else type="primary" size="mini" @click="handStatus(row)">下架</el-button>
-          <el-button size="mini" type="danger" @click="handleModifyStatus(row)">
-            {{ $t('table.delete') }}
-          </el-button>
+          <el-button type="primary" size="mini" @click="ClickEdit(2,scope)">编辑</el-button>
+          <el-button type="danger" size="mini" @click="ClickEdit(0,scope)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <div class="next-footer">
-      <el-button class="foot-upload" size="medium" type="primary" @click="delAll">批量删除</el-button>
-      <el-button class="foot-upload" size="medium" type="primary" @click="upLoadAll">批量改变状态</el-button>
-    </div>
-    <pagination v-show="total>0" :total="total" :page.sync="inf.current" :limit.sync="inf.size"
-                @pagination="getList"/>
+    <el-row type="flex" justify="end" style="margin-top:10px">
+      <transition name="el-zoom-in-top">
+        <template v-if="editVisible">
+          <el-col :span="12">
+            <el-button type="danger" size="mini" @click="ClickBatch(9)">删除</el-button>
+            <el-button type="warning" size="mini" @click="ClickBatch(0)">未发布</el-button>
+            <el-button type="success" size="mini" @click="ClickBatch(1)">已发布</el-button>
+            <el-button type="danger" size="mini" @click="ClickBatch(2)">进行中</el-button>
+            <el-button type="info" size="mini" @click="ClickBatch(3)">已结束</el-button>
+          </el-col>
+        </template>
+      </transition>
+      <el-col :span="12" style="text-align: right">
+        <el-pagination
+          :current-page="1"
+          :page-sizes="[10, 20, 30, 40]"
+          :page-size="10"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="list.total"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </el-col>
+    </el-row>
+    <el-dialog :title="DialogTitle===1? '添加活动':'编辑活动'" :visible.sync="dialogFormVisible">
+      <el-tabs tab-position="left" style="height: 400px;">
+        <el-tab-pane label="基本设置">
+          <el-form :model="form">
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="活动名称" label-width="100px" prop="headline">
+                  <el-input v-model="form.headline" autocomplete="off" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="活动路书" label-width="100px" prop="roadBookId">
+                  <el-select v-model="form.roadBookId" placeholder="请选择活动路书" filterable>
+                    <el-option label="路书一" value="1" />
+                    <el-option label="路书二" value="2" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="推荐指数" label-width="100px" prop="recommendationRate">
+                  <div style="padding:8px 0;">
+                    <el-rate
+                      v-model="form.recommendationRate"
+                      show-score
+                      :max="10"
+                      text-color="#ff9900"
+                      score-template="{value}"
+                    />
+                  </div>
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="活动天数" label-width="100px" prop="daysTrip">
+                  <el-select v-model="form.daysTrip" placeholder="请选择活动天数">
+                    <el-option label="1天" value="1" />
+                    <el-option label="3天" value="3" />
+                    <el-option label="7天" value="7" />
+                    <el-option label="15天" value="15" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="单人价格" label-width="100px" prop="price">
+                  <el-select v-model="form.price" placeholder="请选择活动路书">
+                    <el-option label="500" value="500" />
+                    <el-option label="800" value="800" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="活动里程" label-width="100px" prop="travelMileage">
+                  <el-select v-model="form.travelMileage" placeholder="请选择活动路书">
+                    <el-option label="5" value="5" />
+                    <el-option label="10" value="10" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="报名截止" label-width="100px" prop="deadlineDt">
+                  <el-date-picker
+                    v-model="form.deadlineDt"
+                    type="datetime"
+                    placeholder="选择日期时间"
+                    style="width:200px"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="出发时间" label-width="100px" prop="departureDt">
+                  <el-date-picker
+                    v-model="form.departureDt"
+                    type="datetime"
+                    placeholder="选择日期时间"
+                    style="width:200px"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="活动城市" label-width="100px" prop="areaCode">
+                  <el-select v-model="form.areaCode" placeholder="请选择活动路书">
+                    <el-option label="成都" value="2525" />
+                    <el-option label="重庆" value="68682" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="9">
+                <el-form-item label="发布者" label-width="100px" prop="deadlineDt">
+                  <el-select v-model="form.price" placeholder="请选择活动路书">
+                    <el-option label="500" value="500" />
+                    <el-option label="800" value="800" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" @close="resetTemp()">
-      <div style="height: 400px;overflow-y: scroll;">
-        <el-form :model="scdes" style="padding:0 20px;" ref="dataForm" :rules="rules" label-position="left"
-                 label-width="90px">
-          <el-form-item label="路书标题" prop="name">
-            <el-input v-model="scdes.name"/>
-          </el-form-item>
-          <el-form-item label="目的地位置" prop="areaId">
-            <el-cascader ref="cascaderAddr"
-                         @change="handleDialogChange"
-                         placeholder="请选择省市"
-                         filterable
-                         :options="importanceOptions" v-model="areaId"
-            ></el-cascader>
-            <el-input v-on:input="inputForMap" v-model="keyword" placeholder="请填写目的地址或名称" style="width: 200px"/>
-          </el-form-item>
-          <el-form-item label="推荐指数" prop="recommendIndex">
-            <el-rate style="margin-top: 10px" v-model="scdes.recommendIndex" allow-half show-score :max="10"/>
-          </el-form-item>
-          <el-form-item label="行程天数" prop="tourDuration">
-            <el-input v-model="scdes.tourDuration"/>
-          </el-form-item>
-          <el-form-item label="路书描述" prop="introduction">
-            <el-input type="textarea" v-model="scdes.introduction"/>
-          </el-form-item>
-          <el-form-item label="其他描述" prop="fee">
-            <el-input type="textarea" v-model="scdes.otherDescription"/>
-          </el-form-item>
-          <el-form-item label="封面图片" prop="mainUrl">
-            <el-upload
-              ref="bgImgupload"
-              :data="ossinf ? ossinf : {}"
-              list-type="picture-card"
-              :action="serverUrl"
-              :multiple="false"
-              :auto-upload="false"
-              :on-success="bgImguploadSuccess"
-              :on-error="uploadError"
-              :on-change="OnChange"
-              :file-list="scdes.mainUrl"
-              style="width: 200px;height: 100px"
-            ><i class="el-icon-plus icon"></i>
-            </el-upload>
-          </el-form-item>
-          <el-form-item label="轮播图" prop="spotDetaillImgAddVOS">
-            <el-upload
-              ref="bgImguploadCan"
-              :data="ossCaninf ? ossCaninf : {}"
-              list-type="picture-card"
-              :action="serverUrl"
-              :file-list="scdes.spotDetaillImgAddVOS"
-              :auto-upload="false"
-              :on-success="uploadCanSuccess"
-              :on-error="uploadCanError"
-              :on-change="OnCanChange"
-              :limit='6'
-            ><i class="el-icon-plus icon"></i>
-            </el-upload>
-          </el-form-item>
-        </el-form>
-      </div>
+            <el-row>
+              <el-col :span="21">
+                <el-form-item label="详细地址" label-width="100px" prop="destination">
+                  <el-input
+                    v-model="form.destination"
+                    type="textarea"
+                    placeholder="请输入内容"
+                    :rows="4"
+                    maxlength="50"
+                    show-word-limit
+                    resize="none"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-tab-pane>
+        <el-tab-pane label="行程安排">行程安排</el-tab-pane>
+        <el-tab-pane label="其他设置">
+          <el-form>
+            <el-row>
+              <el-col :span="20">
+                <el-form-item label="背景图片" label-width="100px">
+                  <div class="img">
+                    <img :src="form.imageUrl" alt>
+                    <el-upload
+                      ref="imageUpload"
+                      class="upload-demo"
+                      drag
+                      :action="ossUrl"
+                      :data="ossData"
+                      :on-success="OnSuccess"
+                      :on-change="OnChange"
+                      :auto-upload="false"
+                      :limit="1"
+                      :show-file-list="false"
+                    >
+                      <i class="el-icon-upload" />
+                      <i v-if="form.imageUrl" class="el-icon-delete" @click.stop="test" />
+                    </el-upload>
+                  </div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="20">
+                <el-form-item label="活动描述" label-width="100px">
+                  <el-input
+                    v-model="form.description"
+                    type="textarea"
+                    placeholder="请输入内容"
+                    :rows="4"
+                    maxlength="500"
+                    show-word-limit
+                    resize="none"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="20">
+                <el-form-item label="其他备注" label-width="100px">
+                  <el-input
+                    v-model="form.otherDescription"
+                    type="textarea"
+                    placeholder="请输入内容"
+                    :rows="2"
+                    maxlength="500"
+                    show-word-limit
+                    resize="none"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="resetTemp()">
-          {{ $t('table.cancel') }}
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          {{ $t('table.confirm') }}
-        </el-button>
+        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button type="info" @click="ClickRelease(0)">草稿箱</el-button>
+        <el-button type="primary" @click="ClickRelease(1)">发布</el-button>
       </div>
-    </el-dialog>
-
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel"/>
-        <el-table-column prop="pv" label="Pv"/>
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { getRoadbookList, saveRoadbook, updateRoadbook, updateStatusRoadbook, delRoadBook ,getRoadBookDes} from '@/api/roadbook'
-  import waves from '@/directive/waves' // waves directive
-  import { parseTime } from '@/utils'
-  import { SignatureGET, getAllArea } from '@/api/common.js'
-  import { LoginCheck } from '@/utils/loginCheck.js'
-  import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { ActivtiesGet, ActiveDel, ActivePublish, ActiveAdd } from '@/api/activities'
+import { SignatureGET } from '@/api/common'
+import { getRoadbookList } from '@/api/roadbook'
+import waves from '@/directive/waves' // waves directive
 
-  export default {
-    name: 'ComplexTable',
-    components: { Pagination },
-    directives: { waves },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          published: 'success',
-          draft: 'info',
-          deleted: 'danger'
-        }
-        return statusMap[status]
-      },
-      typeFilter(type) {
-        return calendarTypeKeyValue[type]
-      }
-    },
-    data() {
-      return {
-        allId: null,
-        area: '',
-        tableKey: 0,
-        areaId: [],
-        list: false,
-        total: 0,
-        keyword: '',
-        listLoading: true,
-        importanceOptions: [],
-        scdes: {
-          "areaCode": "",
-          "daysTrip": 0,
-          "description": "",
-          "destination": "",
-          "headline": "",
-          "id": 0,
-          "otherDescription": "",
-          "publishStatus": 0,
-          "recommendationRate": 0,
-          "mainUrl":[],
-          "spotDetaillImgAddVOS":[],
-          "saveVos": [
-            {
-              "areaCode": "",
-              "daysNumber": 0,
-              "description": "",
-              "id": 0,
-              "latitude": 0,
-              "longitude": 0,
-              "roadBookId": 0,
-              "travelEnd": "",
-              "travelMileage": 0,
-              "travelStart": ""
-            }
-          ],
-          "travelMileage": 0
-        },
-        ossinf: '',
-        ossCaninf: '',
-        sele: '',
-        // serverUrl: 'https://testihospitalapi.ebaiyihui.com/oss/api/file/store/v1/saveFile', // 这里写你要上传的图片服务器地址
-        serverUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/', // 这里写你要上传的图片服务器地址
-        inf: {
-          "condition": {
-            "daysTrip": null,
-            "destination": null,
-            "headline": null,
-            "travelMileageType": null
-          },
-          'current': 1,
-          'size': 10
-        },
-        res: {
-          records: []
-        },
-        statusOptions: [1, 2],
-        showReviewer: false,
-        dialogFormVisible: false,
-        dialogStatus: '',
-        textMap: {
-          update: 'Edit',
-          create: 'Create'
-        },
-        dialogPvVisible: false,
-        pvData: [],
-        rules: {},
-        downloadLoading: false
-      }
-    },
-    created() {
-      this.getList()
-      this.getArea()
-    },
-    methods: {
-      upLoadAll() {
-        let a = []
-        if (this.sele == []) {
-          this.$message({
-            message: '请选择路书',
-            type: 'error'
-          })
-        } else {
-          this.sele.map(v => {
-            a.push({ id: v.id, publishStatus: v.publishStatus == 1 ? 0 : 1 })
-          })
-          updateStatusRoadbook(a).then(res => {
-            this.getList()
-            this.$message({
-              message: '操作成功',
-              type: 'success'
-            })
-          })
-        }
-      },
-      delAll() {
-        let a = []
-        if (this.sele == []) {
-          this.$message({
-            message: '请选择景点',
-            type: 'error'
-          })
-        } else {
-          this.sele.map(v => {
-            a.push(v.id)
-          })
-          delScenic(a).then(res => {
-            this.getList()
-            this.$message({
-              message: '操作成功',
-              type: 'success'
-            })
-          })
-        }
-      },
-      handStatus(row) {
-        let parmas = [{
-          id: row.id,
-          status: row.status == 1 ? 0 : 1
-        }]
-        console.log(parmas)
-        updateScenicStatus(parmas).then(res => {
-          this.$message({
-            message: '操作成功',
-            type: 'success'
-          })
-          this.getList()
-        })
-      },
-      inputForMap() {
-        this.scdes.destination = this.keyword
-      },
-      handleDialogChange(value) {
-        let ar = this.$refs['cascaderAddr'].currentLabels
-        this.scdes.areaCode = value[1]
-      },
-      handleChange() {
-        this.inf.condition.destination = this.allId[1]
-      },
-      sendRes(poi) {
-        console.log(poi)
-        this.scdes.coordinate = JSON.stringify(poi.point)
-        this.keyword = poi.address
-        this.scdes.address = poi.address
-      },
-      checkMa(pois) {
-      },
-      select(selection) {
-        this.sele = selection
-      },
-      getArea() {
-        getAllArea().then(res => {
-          this.importanceOptions = res.content
-          let a = {
-            'label': '全部',
-            'value': null
-          }
-          this.importanceOptions.push(a)
-        })
-      },
-      getList() {
-        this.listLoading = true
-        getRoadbookList(this.inf).then(res => {
-          this.listLoading = false
-          this.list = res.content.records
-          this.total = res.content.total
-        }).catch(err => {
-          this.listLoading = false
-        })
-      },
-      handleFilter() {
-        this.inf.current = 1
-        this.getList()
-      },
-      handleModifyStatus(row) {
-        let parmas = []
-        parmas.push(row.id)
-        delScenic(parmas).then(res => {
-          this.getList()
-          this.$message({
-            message: '操作成功',
-            type: 'success'
-          })
-        })
-
-      },
-      sortChange(data) {
-        const { prop, order } = data
-        if (prop === 'id') {
-          this.sortByID(order)
-        }
-      },
-      sortByID(order) {
-        if (order === 'ascending') {
-          this.listQuery.sort = '+id'
-        } else {
-          this.listQuery.sort = '-id'
-        }
-        this.handleFilter()
-      },
-      resetTemp() {
-        this.scdes.fee = 0
-        this.scdes.introduction = ''
-        this.scdes.name = ''
-        this.scdes.recommendIndex = 0
-        this.scdes.provinceId = null
-        this.scdes.address = ''
-        this.scdes.cityId = null
-        this.scdes.mainUrl = []
-        this.scdes.coordinate = ''
-        this.scdes.spotDetaillImgAddVOS = []
-        this.scdes.tourDuration = ''
-        this.areaId = []
-        this.keyword = ''
-        this.dialogFormVisible = false
-        this.$refs['bgImgupload'].clearFiles()
-        this.$refs['bgImguploadCan'].clearFiles()
-      },
-      handleCreate() {
-        this.dialogStatus = 'create'
-        this.dialogFormVisible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].clearValidate()
-        })
-      },
-      createData() {
-        this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            saveRoadbook(this.scdes).then((res) => {
-              this.getList()
-              this.resetTemp()
-              this.$message({
-                message: '操作成功',
-                type: 'success'
-              })
-            })
-          }
-        })
-      },
-      //点击编辑触发事件
-      handleUpdate(row) {
-        getScenicDes(row.id).then(res => {
-          this.scdes = res.content
-          this.scdes.spotDetaillImgAddVOS = res.content.spotDetailImgVOS
-          delete this.scdes.spotDetailImgVOS
-          this.dialogStatus = 'update'
-          this.keyword = res.content.address
-          let area = []
-          area.push(res.content.provinceId)
-          area.push(res.content.cityId)
-          this.areaId = area
-          this.dialogFormVisible = true
-        })
-        console.log(this.scdes)
-      },
-      updateData() {
-        this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            updateScenic(this.scdes).then((res) => {
-              this.getList()
-              this.resetTemp()
-              this.$message({
-                message: '操作成功',
-                type: 'success'
-              })
-            })
-          }
-        })
-      },
-      // 选择文件后请求权限并上传
-      OnChange(file) {
-        if (LoginCheck()) {
-          if (this.ossinf == '') {
-            var myDate = new Date()
-            var mytime = Date.parse(myDate)     //获取当前时间
-            SignatureGET(mytime).then(res => {
-              this.ossinf = res.content
-              console.log(res)
-            }).then(() => {
-              this.$refs.bgImgupload.submit()
-            }).catch((err) => {
-              console.log(err)
-              this.scdes.mainUrl = []
-            })
-          } else {
-            this.ossinf = ''
-          }
-        }
-      },
-      bgImguploadSuccess(res, file) {
-        this.scdes.mainUrl = this.serverUrl + this.ossinf.key
-      },
-
-      uploadError() {
-        this.$message.error('图片插入失败')
-      },
-      // 选择文件后请求权限并上传
-      OnCanChange(file) {
-        if (LoginCheck()) {
-          var myDate = new Date()
-          var mytime = Date.parse(myDate)     //获取当前时间
-          SignatureGET(mytime).then(res => {
-            this.ossCaninf = res.content
-            console.log(res)
-          }).then(() => {
-            this.$refs.bgImguploadCan.submit()
-          })
-        }
-      },
-      uploadCanError() {
-        this.$message.error('图片插入失败')
-      },
-      uploadCanSuccess(res, file) {
-        this.scdes.spotDetaillImgAddVOS.push({ 'url': this.serverUrl + this.ossCaninf.key })
-        this.ossCaninf = ''
+export default {
+  name: 'Roadbook',
+  directives: { waves },
+  filters: {
+    publishStatusFormat(val) {
+      switch (val) {
+        case 0:
+          return '未发布'
+        case 1:
+          return '已发布'
+        case 2:
+          return '进行中'
+        case 3:
+          return '已结束'
+        default:
+          return '未知状态'
       }
     }
+  },
+  data() {
+    return {
+      value: 10,
+      value1: 10,
+      ossData: null,
+      ossUrl: 'http://cd-skm.oss-cn-shenzhen.aliyuncs.com/',
+      dialogImageUrl: '',
+      dialogVisible: false,
+      dialogFormVisible: false,
+      editVisible: false,
+      DialogTitle: null,
+      selectionChange: {},
+      form: {
+        name: '',
+        region: '',
+        date1: '',
+        date2: '',
+        delivery: false,
+        type: [],
+        resource: '',
+        desc: ''
+      },
+      // 活动列表接口数据
+      inf: {
+        'condition': {
+          'areaCodeEq': null,
+          'daysTripBetweenEnd': null,
+          'daysTripBetweenStart': null,
+          'daysTripGe': null,
+          'deadlineDtBetweenEnd': null,
+          'deadlineDtBetweenStart': null,
+          'destinationLike': null,
+          'headlineLike': null,
+          'likeOverall': null,
+          'travelMileage': null
+        },
+        'current': 1,
+        'size': 10,
+        'sorts': [
+        ]
+      },
+      // 批量修改状态操作
+      inf2: {
+        'activityIds': [
+
+        ],
+        'status': 0
+      },
+      list: {
+        records: [],
+        total: 0
+      } // 接收列表结果
+    }
+  },
+  created() {
+    this.Init()
+  },
+  methods: {
+    test() {
+      this.form.imageUrl = null
+      console.log('sss')
+    },
+    // 初始化页面数据
+    Init() {
+      ActivtiesGet(this.inf).then(res => {
+        this.list = res.content
+        // console.log(res)
+      })
+    },
+    // 多少条
+    handleSizeChange(val) {
+      this.inf.current = 1
+      this.inf.size = val
+      // console.log(`每页 ${val} 条`)
+      this.Init()
+    },
+    // 第几页
+    handleCurrentChange(val) {
+      this.inf.current = val
+      // console.log(`当前页: ${val}`)
+      this.Init()
+    },
+    // 多选操作
+    SelectionChange(val) {
+      if (val.length === 0) {
+        this.editVisible = false
+      } else {
+        this.editVisible = true
+      }
+      this.selectionChange = val
+    },
+    // 添加/编辑/删除 按钮
+    ClickEdit(model, val) {
+      // console.log(model)
+      if (model === 0) {
+        // 删除操作
+        ActiveDel([val.row.id]).then(res => {
+          this.list.records.splice(val.$index, 1)
+          this.$message({
+            message: '删除成功!',
+            type: 'success'
+          })
+        })
+      } else {
+        // 编辑 操作
+        getRoadbookList().then(res => {
+          console.log(res)
+        })
+        if (val) {
+          this.form = val.row
+        }
+        this.DialogTitle = model
+        this.dialogFormVisible = true
+      }
+    },
+    // 批量操作
+    ClickBatch(val) {
+      this.inf2.activityIds = []
+      this.selectionChange.forEach(element => {
+        this.inf2.activityIds.push(element.id)
+      })
+      this.inf2.status = val
+      // 删除/批量删除
+      this.$confirm('确定批量操作吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (val === 9) {
+          // 删除操作
+          ActiveDel(this.inf2.activityIds).then(res => {
+            this.$message({
+              message: '删除成功!',
+              type: 'success'
+            })
+          })
+        } else {
+          // 批量修改状态
+          ActivePublish(this.inf2).then(res => {
+            this.Init()
+            this.$message({
+              message: '修改成功!',
+              type: 'success'
+            })
+          })
+        }
+        this.Init()
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        })
+      })
+    },
+    // 选择图片
+    OnChange(file) {
+      console.log(file)
+      if (this.ossData === null) {
+        SignatureGET(file.name).then(res => {
+          console.log(res)
+          this.ossData = res.content // 拿到上传证书
+        }).then(() => {
+          this.$refs.imageUpload.submit() // 执行上传
+        })
+      } else {
+        this.ossData = null
+      }
+    },
+    // 图片上传成功
+    OnSuccess() {
+      this.form.imageUrl = this.ossUrl + this.ossData.key
+    },
+    ClickRelease(status) {
+      this.form.publishStatus = status
+      ActiveAdd(this.form).then(res => {
+        console.log(res)
+        this.$message({
+          message: '操作成功!',
+          type: 'success'
+        })
+        this.Init()
+      })
+    }
   }
+}
 </script>
 <style lang="scss">
-  .map {
-    display: flex;
-    width: 100%;
-    height: 400px;
-    margin-top: 10px;
-  }
-
-  .ml {
-    margin-left: 10px;
-  }
-
-  .fr {
-    float: right;
-  }
-
-  .next-footer {
-    margin: 20px 20px;
-  }
-
-  .el-upload--picture-card {
-    width: 185px !important;
-    height: 100px !important;
-  }
-
-  .icon {
-    width: 185px;
-    height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .el-upload-list__item {
-    width: 185px !important;
-    height: 100px !important;
-  }
+@import "@/styles/zp.scss";
+d {
+  text-align: right;
+}
 </style>

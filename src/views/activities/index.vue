@@ -82,9 +82,9 @@
       </el-col>
     </el-row>
     <el-dialog :title="DialogTitle===1? '添加活动':'编辑活动'" :visible.sync="dialogFormVisible">
-      <el-tabs tab-position="left" style="height: 400px;">
-        <el-tab-pane label="基本设置">
-          <el-form :model="form">
+      <el-form ref="activitiesForm" :rules="rules" :model="form">
+        <el-tabs tab-position="left" style="height: 400px;">
+          <el-tab-pane label="基本设置">
             <el-row>
               <el-col :span="12">
                 <el-form-item label="活动名称" label-width="100px" prop="headline">
@@ -128,10 +128,7 @@
             <el-row>
               <el-col :span="12">
                 <el-form-item label="单人价格" label-width="100px" prop="price">
-                  <el-select v-model="form.price" placeholder="请选择活动路书">
-                    <el-option label="500" value="500" />
-                    <el-option label="800" value="800" />
-                  </el-select>
+                  <el-input v-model.number="form.price" autocomplete="off" style="width:200px" />
                 </el-form-item>
               </el-col>
               <el-col :span="9">
@@ -174,8 +171,8 @@
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="9">
-                <el-form-item label="发布者" label-width="100px" prop="deadlineDt">
+              <el-col v-if="DialogTitle!==1" :span="9">
+                <el-form-item label="发布者" label-width="100px">
                   <el-select v-model="form.price" placeholder="请选择活动路书">
                     <el-option label="500" value="500" />
                     <el-option label="800" value="800" />
@@ -199,11 +196,9 @@
                 </el-form-item>
               </el-col>
             </el-row>
-          </el-form>
-        </el-tab-pane>
-        <el-tab-pane label="行程安排">行程安排</el-tab-pane>
-        <el-tab-pane label="其他设置">
-          <el-form>
+          </el-tab-pane>
+          <el-tab-pane label="行程安排">行程安排</el-tab-pane>
+          <el-tab-pane label="其他设置">
             <el-row>
               <el-col :span="20">
                 <el-form-item label="背景图片" label-width="100px">
@@ -258,13 +253,13 @@
                 </el-form-item>
               </el-col>
             </el-row>
-          </el-form>
-        </el-tab-pane>
-      </el-tabs>
+          </el-tab-pane>
+        </el-tabs>
+      </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="info" @click="ClickRelease(0)">草稿箱</el-button>
-        <el-button type="primary" @click="ClickRelease(1)">发布</el-button>
+        <el-button type="info" @click="ClickRelease(0,'activitiesForm')">草稿箱</el-button>
+        <el-button type="primary" @click="ClickRelease(1,'activitiesForm')">发布</el-button>
       </div>
     </el-dialog>
   </div>
@@ -273,6 +268,7 @@
 <script>
 import { ActivtiesGet, ActiveDel, ActivePublish, ActiveAdd } from '@/api/activities'
 import { SignatureGET } from '@/api/common'
+import { getRoadbookList } from '@/api/roadbook'
 import waves from '@/directive/waves' // waves directive
 
 export default {
@@ -306,6 +302,37 @@ export default {
       editVisible: false,
       DialogTitle: null,
       selectionChange: {},
+      // 表单验证规则
+      rules: {
+        headline: [
+          { required: true, message: '请输入活动名称', trigger: 'blur' }
+        ],
+        roadBookId: [
+          { required: true, message: '请选择路书', trigger: 'blur' }
+        ],
+        daysTrip: [
+          { required: true, message: '请输入活动天数', trigger: 'blur' }
+        ],
+        price: [
+          { required: true, message: '请输入活动成人单价' },
+          { type: 'number', message: '单价必须为数字' }
+        ],
+        travelMileage: [
+          { required: true, message: '请输入活动里程距离', trigger: 'blur' }
+        ],
+        deadlineDt: [
+          { type: 'date', required: true, message: '请截止报名日期', trigger: 'change' }
+        ],
+        departureDt: [
+          { type: 'date', required: true, message: '请出发日期', trigger: 'change' }
+        ],
+        areaCode: [
+          { required: true, message: '请选择活动城市', trigger: 'blur' }
+        ],
+        destination: [
+          { required: true, message: '请输入详细活动地点', trigger: 'change' }
+        ]
+      },
       form: {
         name: '',
         region: '',
@@ -390,14 +417,29 @@ export default {
       // console.log(model)
       if (model === 0) {
         // 删除操作
-        ActiveDel([val.row.id]).then(res => {
-          this.list.records.splice(val.$index, 1)
+        this.$confirm('确定删除该活动?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          ActiveDel([val.row.id]).then(res => {
+            this.list.records.splice(val.$index, 1)
+            this.$message({
+              message: '删除成功!',
+              type: 'success'
+            })
+          })
+        }).catch(() => {
           this.$message({
-            message: '删除成功!',
-            type: 'success'
+            type: 'info',
+            message: '已取消'
           })
         })
       } else {
+        // 编辑 操作
+        getRoadbookList().then(res => {
+          console.log(res)
+        })
         if (val) {
           this.form = val.row
         }
@@ -413,7 +455,7 @@ export default {
       })
       this.inf2.status = val
       // 删除/批量删除
-      this.$confirm('确定批量操作吗？', '提示', {
+      this.$confirm('确定批量操作?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -421,6 +463,7 @@ export default {
         if (val === 9) {
           // 删除操作
           ActiveDel(this.inf2.activityIds).then(res => {
+            this.Init()
             this.$message({
               message: '删除成功!',
               type: 'success'
@@ -436,7 +479,6 @@ export default {
             })
           })
         }
-        this.Init()
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -462,15 +504,25 @@ export default {
     OnSuccess() {
       this.form.imageUrl = this.ossUrl + this.ossData.key
     },
-    ClickRelease(status) {
-      this.form.publishStatus = status
-      ActiveAdd(this.form).then(res => {
-        console.log(res)
-        this.$message({
-          message: '操作成功!',
-          type: 'success'
-        })
-        this.Init()
+    // 确定发布 草稿箱
+    ClickRelease(status, formName) {
+      // 表单验证
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.form.publishStatus = status
+          ActiveAdd(this.form).then(res => {
+            console.log(res)
+            this.$message({
+              message: '操作成功!',
+              type: 'success'
+            })
+            this.dialogFormVisible = false // 关闭对话框
+            this.Init() // 刷新数据
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
       })
     }
   }
