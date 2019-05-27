@@ -35,7 +35,7 @@
       <el-table-column label="发布时间" width="300px" prop="entryDt" align="center" sortable>
         <template slot-scope="scope">{{ scope.row.entryDt }}</template>
       </el-table-column>
-      <el-table-column label="发布人" width="150px" prop="publisherName" align="center" sortable>
+      <el-table-column label="发布人ss" width="150px" prop="publisherName" align="center" sortable>
         <template slot-scope="scope">{{ scope.row.publisherName }}</template>
       </el-table-column>
       <el-table-column label="状态" class-name="status-col" prop="publishStatus" width="150" sortable>
