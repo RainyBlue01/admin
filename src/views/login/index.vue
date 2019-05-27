@@ -9,7 +9,7 @@
         <lang-select class="set-language" />
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="phone">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
@@ -57,12 +57,12 @@
         </div>
         <div class="tips">
           <span style="margin-right:18px;">
-            {{ $t('login.username') }} : editor
+            {{ $t('login.phone') }} : editor
           </span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
         </div>-->
 
-       <!-- <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
+        <!-- <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
           {{ $t('login.thirdparty') }}
         </el-button>-->
       </div>
@@ -79,7 +79,7 @@
 </template>
 
 <script>
-// import { validUsername } from '@/utils/validate'
+// import { validphone } from '@/utils/validate'
 import LangSelect from '@/components/LangSelect'
 import SocialSign from './components/SocialSignin'
 
@@ -87,9 +87,9 @@ export default {
   name: 'Login',
   components: { LangSelect, SocialSign },
   data() {
-    const validateUsername = (rule, value, callback) => {
+    const validatephone = (rule, value, callback) => {
       callback()
-      // if (!validUsername(value)) {
+      // if (!validphone(value)) {
       //   callback(new Error('Please enter the correct user name'))
       // } else {
       //
@@ -108,7 +108,7 @@ export default {
         password: '123'
       },
       loginRules: {
-        phone: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        phone: [{ required: true, trigger: 'blur', validator: validatephone }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       passwordType: 'password',
@@ -168,6 +168,7 @@ export default {
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
+          // console.log('ssss')
             .then(() => {
               this.$router.push({ path: this.redirect || '/' })
               this.loading = false
