@@ -14,7 +14,7 @@
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
-        @click="ClickEdit(1)"
+        @click="ClickEdit"
       >添加</el-button>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-download">导出</el-button>
     </div>
@@ -81,7 +81,7 @@
         />
       </el-col>
     </el-row>
-    <el-dialog :title="DialogTitle===1? '添加活动':'编辑活动'" :visible.sync="dialogFormVisible">
+    <el-dialog :title="DialogTitle" :visible.sync="dialogFormVisible">
       <el-form ref="activitiesForm" :rules="rules" :model="form">
         <el-tabs tab-position="left" style="height: 400px;">
           <el-tab-pane label="基本设置">
@@ -92,10 +92,16 @@
                 </el-form-item>
               </el-col>
               <el-col :span="9">
-                <el-form-item label="活动路书" label-width="100px" prop="roadBookId">
-                  <el-select v-model="form.roadBookId" placeholder="请选择活动路书" filterable>
-                    <el-option label="路书一" value="1" />
-                    <el-option label="路书二" value="2" />
+                <el-form-item label="路书ID" label-width="100px" prop="roadBookId">
+                  <el-select
+                    v-model="form.roadBookId"
+                    placeholder="请选择活动路书"
+                    filterable
+                    @change="SelectChange"
+                  >
+                    <el-option v-for="(item,index) in roadbookList " :key="index" :value="item.id">
+                      <div style="width:160px">{{ item.id }}:{{ item.headline }}</div>
+                    </el-option>
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -133,10 +139,12 @@
               </el-col>
               <el-col :span="9">
                 <el-form-item label="活动里程" label-width="100px" prop="travelMileage">
-                  <el-select v-model="form.travelMileage" placeholder="请选择活动路书">
-                    <el-option label="5" value="5" />
-                    <el-option label="10" value="10" />
-                  </el-select>
+                  <el-input
+                    v-model.number="form.travelMileage"
+                    autocomplete="off"
+                    style="width:200px"
+                    placeholder="KM"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -165,13 +173,17 @@
             <el-row>
               <el-col :span="12">
                 <el-form-item label="活动城市" label-width="100px" prop="areaCode">
-                  <el-select v-model="form.areaCode" placeholder="请选择活动路书">
-                    <el-option label="成都" value="2525" />
-                    <el-option label="重庆" value="68682" />
+                  <el-select v-model="form.areaCode" placeholder="请选择活动城市" filterable>
+                    <el-option
+                      v-for="(item,index) in allCityList "
+                      :key="index"
+                      :label="item.label"
+                      :value="item.value"
+                    />
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col v-if="DialogTitle!==1" :span="9">
+              <el-col v-if="DialogTitle=='编辑活动'" :span="9">
                 <el-form-item label="发布者" label-width="100px">
                   <el-select v-model="form.price" placeholder="请选择活动路书">
                     <el-option label="500" value="500" />
@@ -197,7 +209,6 @@
               </el-col>
             </el-row>
           </el-tab-pane>
-          <el-tab-pane label="行程安排">行程安排</el-tab-pane>
           <el-tab-pane label="其他设置">
             <el-row>
               <el-col :span="20">
@@ -266,9 +277,9 @@
 </template>
 
 <script>
-import { ActivtiesGet, ActiveDel, ActivePublish, ActiveAdd } from '@/api/activities'
+import { ActivtiesGet, ActiveDel, ActivePublish, ActiveAdd, AllCityGet } from '@/api/activities'
 import { SignatureGET } from '@/api/common'
-import { getRoadbookList } from '@/api/roadbook'
+import { getRoadbookList, getRoadBookDes } from '@/api/roadbook'
 import waves from '@/directive/waves' // waves directive
 
 export default {
@@ -308,29 +319,30 @@ export default {
           { required: true, message: '请输入活动名称', trigger: 'blur' }
         ],
         roadBookId: [
-          { required: true, message: '请选择路书', trigger: 'blur' }
+          { required: true, message: '请选择路书', trigger: 'change' }
         ],
         daysTrip: [
           { required: true, message: '请输入活动天数', trigger: 'blur' }
         ],
         price: [
-          { required: true, message: '请输入活动成人单价' },
-          { type: 'number', message: '单价必须为数字' }
+          { required: true, message: '请输入活动成人单价', trigger: 'blur' },
+          { type: 'number', message: '单价必须为数字', trigger: 'blur' }
         ],
         travelMileage: [
-          { required: true, message: '请输入活动里程距离', trigger: 'blur' }
+          { required: true, message: '请输入活动里程距离', trigger: 'blur' },
+          { type: 'number', message: '距离必须为数字', trigger: 'blur' }
         ],
         deadlineDt: [
-          { type: 'date', required: true, message: '请截止报名日期', trigger: 'change' }
+          { type: 'date', required: true, message: '请选择截止报名日期', trigger: 'change' }
         ],
         departureDt: [
-          { type: 'date', required: true, message: '请出发日期', trigger: 'change' }
+          { type: 'date', required: true, message: '请选择出发日期', trigger: 'change' }
         ],
         areaCode: [
-          { required: true, message: '请选择活动城市', trigger: 'blur' }
+          { required: true, message: '请选择活动城市', trigger: 'change' }
         ],
         destination: [
-          { required: true, message: '请输入详细活动地点', trigger: 'change' }
+          { required: true, message: '请输入详细活动地点', trigger: 'blur' }
         ]
       },
       form: {
@@ -369,6 +381,19 @@ export default {
         ],
         'status': 0
       },
+      inf_getRoadbookList: {
+        'condition': {
+          'daysTrip': null,
+          'destination': null,
+          'headline': null,
+          'travelMileageType': 0
+        },
+        'current': 1,
+        'size': 999999,
+        'sorts': []
+      },
+      roadbookList: [],
+      allCityList: [],
       list: {
         records: [],
         total: 0
@@ -377,6 +402,23 @@ export default {
   },
   created() {
     this.Init()
+    // 获取全部路书
+    getRoadbookList(this.inf_getRoadbookList).then(res => {
+      // console.log(res)
+      this.roadbookList = res.content.records
+    })
+    // 获取全部城市
+    AllCityGet().then(res => {
+      // 处理全部城市数据
+      res.content.forEach(element => {
+        // console.log(element.children)
+        element.children.forEach(element => {
+          // console.log(element)
+          this.allCityList.push(element)
+        })
+      })
+      // console.log(this.allCityList)
+    })
   },
   methods: {
     test() {
@@ -436,18 +478,23 @@ export default {
           })
         })
       } else {
-        // 编辑 操作
-        getRoadbookList().then(res => {
-          console.log(res)
-        })
+        // 添加 编辑 操作
         if (val) {
+          // 编辑
+          this.DialogTitle = '编辑活动'
           this.form = val.row
         } else {
-          this.form = null
+          // 添加
+          this.DialogTitle = '添加活动'
+          this.form = {}
         }
-        this.DialogTitle = model
         this.dialogFormVisible = true
       }
+    },
+    SelectChange(val) {
+      getRoadBookDes(val).then(res => {
+        console.log(res.content)
+      })
     },
     // 批量操作
     ClickBatch(val) {
@@ -508,6 +555,7 @@ export default {
     },
     // 确定发布 草稿箱
     ClickRelease(status, formName) {
+      console.log(this.form)
       // 表单验证
       this.$refs[formName].validate((valid) => {
         if (valid) {

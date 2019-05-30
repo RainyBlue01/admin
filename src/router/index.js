@@ -152,7 +152,7 @@ export const constantRoutes = [
         meta: { title: '大人物设置', icon: 'dashboard', noCache: true }
       }
     ]
-  },
+  }
 ]
 
 /**
@@ -163,7 +163,7 @@ export const asyncRoutes = [
 
   /** when your routing map is too long, you can split it into small modules **/
 
-/*  {
+  /*  {
     path: '/zip',
     component: Layout,
     redirect: '/zip/download',

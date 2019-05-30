@@ -1,41 +1,42 @@
 import request from '@/utils/request'
 
-// 所有城市页查询
-export function TravelPage() {
-  return request({
-    method: 'get',
-    url: 'area/list'
-  })
-}
-// 活动分页查询
-export function TravelBatchDelete(inf) {
+// 游记列表查询
+export function TravelPage(inf) {
   return request({
     method: 'post',
-    url: 'active/page',
+    url: 'travel/page',
     data: inf
   })
 }
-// 活动分页查询
+// 批量删除
+export function TravelBatchDelete(inf) {
+  return request({
+    method: 'delete',
+    url: 'travel/batchDelete',
+    data: inf
+  })
+}
+// 游记发布保存
 export function TravelSave(inf) {
   return request({
     method: 'post',
-    url: 'active/page',
+    url: 'travel/save',
     data: inf
   })
 }
-// 活动分页查询
+// 游记状态修改
 export function TravelStatus(inf) {
   return request({
     method: 'post',
-    url: 'active/page',
+    url: 'travel/status',
     data: inf
   })
 }
-// 活动分页查询
+// 游记编辑更新
 export function TravelUpdate(inf) {
   return request({
     method: 'post',
-    url: 'active/page',
+    url: 'travel/update',
     data: inf
   })
 }

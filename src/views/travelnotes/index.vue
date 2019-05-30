@@ -18,44 +18,76 @@
       >添加</el-button>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-download">导出</el-button>
     </div>
-    <el-table :data="list.records" fit style="width: 100%;" @selection-change="SelectionChange">
-      <el-table-column type="selection" align="center" width="50px" />
-      <el-table-column label="ID" prop="id" align="center" width="100px" sortable />
-      <el-table-column label="游记名称" prop="name" min-width="200px" align="center" />
-      <el-table-column label="旅游时间" width="300px" prop="tourDt" align="center" sortable>
-        <template slot-scope="scope">{{ scope.row.tourDt }}</template>
-      </el-table-column>
-      <el-table-column label="作者" width="150px" prop="userName" align="center" sortable>
-        <template slot-scope="scope">{{ scope.row.userName }}</template>
-      </el-table-column>
-      <el-table-column
-        label="收藏数量"
-        class-name="status-col"
-        prop="collectCount"
-        width="150"
-        sortable
-      />
-      <el-table-column
-        label="评论数量"
-        class-name="status-col"
-        prop="commentCount"
-        width="150"
-        sortable
-      />
-      <el-table-column label="操作" align="center" width="250">
-        <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="ClickEdit(2,scope)">编辑</el-button>
-          <el-button type="danger" size="mini" @click="ClickEdit(0,scope)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-tabs type="border-card">
+      <el-table :data="list.records" fit style="width: 100%;" @selection-change="SelectionChange">
+        <el-table-column type="selection" align="center" width="50px" />
+        <el-table-column label="ID" prop="id" align="center" width="100px" sortable />
+        <el-table-column label="游记名称" prop="name" min-width="200px" align="center" />
+        <el-table-column label="旅游时间" width="300px" prop="tourDt" align="center" sortable>
+          <template slot-scope="scope">{{ scope.row.tourDt }}</template>
+        </el-table-column>
+        <el-table-column label="作者" width="150px" prop="userName" align="center" sortable>
+          <template slot-scope="scope">{{ scope.row.userName }}</template>
+        </el-table-column>
+        <el-table-column
+          label="收藏数量"
+          class-name="status-col"
+          prop="collectCount"
+          width="150"
+          sortable
+        />
+        <el-table-column
+          label="评论数量"
+          class-name="status-col"
+          prop="commentCount"
+          width="150"
+          sortable
+        />
+        <el-table-column label="状态" class-name="status-col" prop="status" width="150" sortable>
+          <template slot-scope="scope">
+            <el-tag
+              v-if="scope.row.status===0"
+              type="warning"
+            >{{ scope.row.status | publishStatusFormat }}</el-tag>
+            <el-tag
+              v-else-if="scope.row.status===1"
+              type="success"
+            >{{ scope.row.status | publishStatusFormat }}</el-tag>
+            <el-tag
+              v-else-if="scope.row.status===2"
+              type="info"
+            >{{ scope.row.status | publishStatusFormat }}</el-tag>
+            <el-tag v-else>{{ scope.row.status |publishStatusFormat }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="250">
+          <template slot-scope="scope">
+            <el-button
+              v-if="scope.row.status!==1"
+              type="success"
+              size="mini"
+              @click="ClickEdit(1,scope)"
+            >通过</el-button>
+            <el-button
+              v-if="scope.row.status!==2"
+              type="info"
+              size="mini"
+              @click="ClickEdit(2,scope)"
+            >不通过</el-button>
+            <el-button type="danger" size="mini" @click="ClickEdit(9,scope)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-tabs>
+
     <el-row type="flex" justify="end" style="margin-top:10px">
       <transition name="el-zoom-in-top">
         <template v-if="editVisible">
           <el-col :span="12">
             <el-button type="danger" size="mini" @click="ClickBatch(9)">删除</el-button>
-            <el-button type="info" size="mini" @click="ClickBatch(0)">草稿</el-button>
-            <el-button type="success" size="mini" @click="ClickBatch(1)">发布</el-button>
+            <el-button type="warning" size="mini" @click="ClickBatch(0)">审核中</el-button>
+            <el-button type="success" size="mini" @click="ClickBatch(1)">已通过</el-button>
+            <el-button type="info" size="mini" @click="ClickBatch(2)">未通过</el-button>
           </el-col>
         </template>
       </transition>
@@ -71,7 +103,7 @@
         />
       </el-col>
     </el-row>
-    <el-dialog :title="DialogTitle===1? '添加游记':'编辑游记'" :visible.sync="dialogFormVisible">
+    <el-dialog title="添加游记" :visible.sync="dialogFormVisible">
       <el-form
         ref="travelnotesForm"
         :rules="rules"
@@ -87,7 +119,14 @@
           <el-row>
             <el-col :span="12">
               <el-form-item label="旅游地点" label-width="100px" prop="destination">
-                <el-input v-model="form.destination" autocomplete="off" style="width:220px" />
+                <el-select v-model="form.destination" placeholder="请选择活动城市" filterable>
+                  <el-option
+                    v-for="(item,index) in allCityList "
+                    :key="index"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -96,7 +135,7 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row v-if="DialogTitle!==1">
+          <!-- <el-row v-if="DialogTitle!==1">
             <el-col :span="12">
               <el-form-item label="收藏数量" label-width="100px">
                 <el-input v-model="form.collectCount" autocomplete="off" style="width:220px" />
@@ -107,7 +146,7 @@
                 <el-input v-model="form.commentCount" autocomplete="off" style="width:220px" />
               </el-form-item>
             </el-col>
-          </el-row>
+          </el-row>-->
           <el-row>
             <el-form-item label="背景图片" label-width="100px">
               <div class="img">
@@ -175,17 +214,16 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="info" @click="ClickRelease(0,'travelnotesForm')">草稿箱</el-button>
-        <el-button type="primary" @click="ClickRelease(1,'travelnotesForm')">发布</el-button>
+        <el-button type="primary" @click="ClickRelease('travelnotesForm')">发布</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { TravelPage, TravelBatchDelete, TravelSave, TravelStatus, TravelUpdate } from '@/api/travelnotes'
+import { AllCityGet } from '@/api/activities'
+import { TravelPage, TravelBatchDelete, TravelSave, TravelStatus } from '@/api/travelnotes'
 import { SignatureGET } from '@/api/common'
-import { getRoadbookList } from '@/api/roadbook'
 import waves from '@/directive/waves' // waves directive
 import { quillEditor } from 'vue-quill-editor'
 import 'quill/dist/quill.core.css'
@@ -205,13 +243,11 @@ export default {
     publishStatusFormat(val) {
       switch (val) {
         case 0:
-          return '未发布'
+          return '审核中'
         case 1:
-          return '已发布'
+          return '已通过'
         case 2:
-          return '进行中'
-        case 3:
-          return '已结束'
+          return '未通过'
         default:
           return '未知状态'
       }
@@ -232,19 +268,19 @@ export default {
       // 表单验证规则
       rules: {
         name: [
-          { required: true, message: '请输入游记名称', trigger: 'change' }
+          { required: true, message: '请输入游记名称', trigger: 'blur' }
         ],
         destination: [
-          { required: true, message: '请输入旅游地点', trigger: 'change' }
+          { required: true, message: '请输入旅游地点', trigger: 'blur' }
         ],
         tourDt: [
-          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
+          { type: 'date', required: true, message: '请选择日期', trigger: 'blur' }
         ],
         description: [
-          { required: true, message: '请输入游记描述', trigger: 'change' }
+          { required: true, message: '请输入游记描述', trigger: 'blur' }
         ],
         content: [
-          { required: true, message: '请输入主体内容', trigger: 'change' }
+          { required: true, message: '请输入主体内容', trigger: 'blur' }
         ]
       },
       // 富文本设置
@@ -293,6 +329,7 @@ export default {
         'destination': null,
         'label': 0,
         'name': null,
+        'status': 1,
         'tourDt': null
       },
       // 活动列表接口数据
@@ -305,16 +342,13 @@ export default {
         },
         'current': 1,
         'size': 10,
-        'sorts': [
-        ]
+        'sorts': []
       },
       // 批量修改状态操作
-      inf2: {
-        'activityIds': [
+      inf2: [
 
-        ],
-        'status': 0
-      },
+      ],
+      allCityList: [],
       list: {
         records: [],
         total: 0
@@ -323,12 +357,20 @@ export default {
   },
   created() {
     this.Init()
+    // 获取全部城市
+    AllCityGet().then(res => {
+      // 处理全部城市数据
+      res.content.forEach(element => {
+        // console.log(element.children)
+        element.children.forEach(element => {
+          // console.log(element)
+          this.allCityList.push(element)
+        })
+      })
+      // console.log(this.allCityList)
+    })
   },
   methods: {
-    test() {
-      this.form.imageUrl = null
-      console.log('sss')
-    },
     // 初始化页面数据
     Init() {
       TravelPage(this.inf).then(res => {
@@ -361,7 +403,7 @@ export default {
     // 添加/编辑/删除 按钮
     ClickEdit(model, val) {
       // console.log(model)
-      if (model === 0) {
+      if (model === 9) {
         // 删除操作
         TravelBatchDelete([val.row.id]).then(res => {
           this.list.records.splice(val.$index, 1)
@@ -371,25 +413,22 @@ export default {
           })
         })
       } else {
-        // 编辑 操作
-        getRoadbookList().then(res => {
-          console.log(res)
+        console.log(val)
+        // 修改状态
+        TravelStatus(
+          [{ id: val.id,
+            state: model }]
+        ).then(res => {
+          this.$message({
+            message: '修改成功!',
+            type: 'success'
+          })
+          this.Init()
         })
-        if (val) {
-          this.form = val.row
-          console.log(val)
-        }
-        this.DialogTitle = model
-        this.dialogFormVisible = true
       }
     },
     // 批量操作
     ClickBatch(val) {
-      this.inf2.activityIds = []
-      this.selectionChange.forEach(element => {
-        this.inf2.activityIds.push(element.id)
-      })
-      this.inf2.status = val
       this.$confirm('确定批量操作吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -397,15 +436,25 @@ export default {
       }).then(() => {
         if (val === 9) {
           // 删除操作
-          console.log(this.inf2.activityIds)
-          TravelBatchDelete(this.inf2.activityIds).then(res => {
+          const id = []
+          this.selectionChange.forEach(element => {
+            id.push(element.id)
+          })
+          TravelBatchDelete(id).then(res => {
             this.$message({
               message: '删除成功!',
               type: 'success'
             })
+            this.Init()
           })
         } else {
           // 批量修改状态
+          this.selectionChange.forEach(element => {
+            this.inf2.push({
+              'id': element.id,
+              'status': val
+            })
+          })
           TravelStatus(this.inf2).then(res => {
             this.Init()
             this.$message({
@@ -414,7 +463,6 @@ export default {
             })
           })
         }
-        this.Init()
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -438,34 +486,21 @@ export default {
     },
     // 图片上传成功
     OnSuccess() {
-      this.form.imageUrl = this.ossUrl + this.ossData.key
+      this.form.bgImage = this.ossUrl + this.ossData.key
     },
-    // 确定发布 草稿箱
-    ClickRelease(status, formName) {
+    // 确定发布
+    ClickRelease(formName) {
       // 表单验证
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          if (this.DialogTitle === 1) {
-            // 添加游记
-            TravelUpdate(this.form).then(res => {
-              console.log(res)
-              this.$message({
-                message: '修改成功!',
-                type: 'success'
-              })
-              this.Init()
+          TravelSave(this.form).then(res => {
+            console.log(res)
+            this.$message({
+              message: '发布成功!',
+              type: 'success'
             })
-          } else {
-            this.form.publishStatus = status
-            TravelSave(this.form).then(res => {
-              console.log(res)
-              this.$message({
-                message: '操作成功!',
-                type: 'success'
-              })
-              this.Init()
-            })
-          }
+            this.Init()
+          })
         } else {
           console.log('error submit!!')
           return false
@@ -474,12 +509,47 @@ export default {
     },
     // 富文本上传图片
     OnChange2(file) {
-      console.log(file.name)
+      // console.log(file)
+      if (this.ossData === null) {
+        SignatureGET(file.name).then(res => {
+          console.log(res)
+          this.ossData = res.content // 拿到上传证书
+        }).then(() => {
+          this.$refs.upload.submit() // 执行上传
+        })
+      } else {
+        this.ossData = null
+      }
+    },
+    onEditorBlur() {
+      // 失去焦点事件
+    },
+    onEditorFocus(res) {
+      // 获得焦点事件
+      // console.log(res)
+    },
+    onEditorChange() {
+      // 内容改变事件
+      this.$emit('input', this.content)
     },
     // 富文本图片上传成功
     OnSuccess2() {
       // this.form.imageUrl = this.ossUrl + this.ossData.key
-      console.log('ddd')
+      this.$message({
+        message: '插入成功',
+        type: 'success'
+      })
+      // res为图片服务器返回的数据
+      // 获取富文本组件实例
+      const quill = this.$refs.myQuillEditor.quill
+      // 如果上传成功
+      // console.log(res)
+      // 获取光标所在位置
+      const length = quill.getSelection().index
+      // 插入图片  res.url为服务器返回的图片地址
+      quill.insertEmbed(length, 'image', this.ossUrl + this.ossData.key)
+      // 调整光标到最后
+      quill.setSelection(length + 1)
     }
   }
 }
